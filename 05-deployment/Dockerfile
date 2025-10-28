@@ -1,18 +1,18 @@
-# Step 1: Use the prepared base image
+# Base image
 FROM agrigorev/zoomcamp-model:2025
 
-# Step 2: Set working directory inside the container
+# Set working directory
 WORKDIR /code
 
-# Step 3: Copy pyproject.toml (for dependencies) and install them
-COPY pyproject.toml .
-RUN pip install --upgrade pip && pip install -r <(uv export --without-hashes)
+# Install dependencies
+RUN pip install --upgrade pip fastapi uvicorn scikit-learn
 
-# Step 4: Copy your FastAPI script into the container
+# Copy pipeline and FastAPI app into the container
+COPY pipeline_v1.bin .
 COPY app.py .
 
-# Step 5: Expose port for FastAPI
+# Expose FastAPI port
 EXPOSE 8000
 
-# Step 6: Run FastAPI server using uvicorn
+# Run FastAPI server
 ENTRYPOINT ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
