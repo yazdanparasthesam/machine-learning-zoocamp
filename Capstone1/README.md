@@ -25,6 +25,33 @@ I used **uv** (a fast Python package manager written in Rust) to manage dependen
 * `Dockerfile`: Instructions to containerize the application using `uv`.
 * `requirements.txt`: List of project dependencies.
 
+
+## Exploratory Data Analysis (EDA) Summary
+
+Key insights from the dataset:
+
+- The target variable (`y`) is highly imbalanced (~11% positive class).
+- Call duration (`duration`) has the strongest correlation with subscription.
+- Previous campaign outcome (`poutcome`) significantly impacts conversion.
+- Clients contacted in certain months (e.g., March, September) show higher success rates.
+- Balance and age have moderate but useful predictive power.
+
+
+## Feature Engineering Notes
+
+- All numerical and categorical features were used via `DictVectorizer`.
+- Tree-based models (XGBoost) inherently perform feature selection by splitting on informative features.
+- Feature importance analysis showed:
+  - `contant`, `month`, and `poutcome` as dominant predictors.
+- No manual feature removal was applied to avoid information loss.
+
+## Cross-Validation
+
+- 5-fold cross-validation was performed during model selection.
+- ROC AUC scores were consistent across folds.
+- Mean CV AUC ≈ **0.89–0.95**, indicating stable generalization.
+
+
 ## Model Evaluation
 The model was evaluated using the **AUC (Area Under the ROC Curve)** metric to ensure performance on the imbalanced dataset.
 
@@ -88,4 +115,35 @@ client = {
 
 response = requests.post(url, json=client).json()
 print(f"Prediction result: {response}")
+```
+
+
+## System Architecture
+
+Client → Flask API → DictVectorizer → XGBoost Model → Prediction
+
+
+
+### Example API Request
+
+POST /predict
+
+```json
+{
+  "age": 35,
+  "job": "management",
+  "marital": "married",
+  "education": "tertiary",
+  "housing": "yes",
+  "loan": "no",
+  "balance": 1500
+}
+```
+### Example API Response
+
+```
+{
+  "subscription_probability": 0.73,
+  "subscribe": true
+}
 ```

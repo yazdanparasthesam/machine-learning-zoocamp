@@ -1,5 +1,8 @@
 import pickle
+import logging
 from flask import Flask, request, jsonify
+
+logging.basicConfig(level=logging.INFO)
 
 with open('model.bin', 'rb') as f_in:
     dv, model = pickle.load(f_in)
@@ -9,6 +12,7 @@ app = Flask('bank-prediction')
 @app.route('/predict', methods=['POST'])
 def predict():
     customer = request.get_json()
+    logging.info(f"Received request: {customer}")
     X = dv.transform([customer])
     y_pred = model.predict_proba(X)[0, 1]
     subscribe = y_pred >= 0.5
