@@ -118,13 +118,13 @@ print(f"Prediction result: {response}")
 ```
 
 
-## System Architecture
+# System Architecture
 
 Client → Flask API → DictVectorizer → XGBoost Model → Prediction
 
 
 
-### Example API Request
+## Example API Request
 
 POST /predict
 
@@ -139,7 +139,7 @@ POST /predict
   "balance": 1500
 }
 ```
-### Example API Response
+## Example API Response
 
 ```
 {
