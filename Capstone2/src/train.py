@@ -1,32 +1,46 @@
+#Production-style training script
+#✔ Reproducibility
+#✔ Script-based training
+#✔ Notebook separation
 import torch
-from torchvision import datasets, transforms, models
-from torch import nn, optim
+from torch import nn
 from torch.utils.data import DataLoader
+from torchvision.datasets import ImageFolder
 
-transform = transforms.Compose([
-    transforms.Resize((224, 224)),
-    transforms.ToTensor()
-])
+from model import build_model
+from preprocessing import get_train_transforms, get_val_transforms
 
-train_ds = datasets.ImageFolder("data/train", transform=transform)
-val_ds = datasets.ImageFolder("data/val", transform=transform)
 
-train_dl = DataLoader(train_ds, batch_size=32, shuffle=True)
-val_dl = DataLoader(val_ds, batch_size=32)
+def train():
+    device = "cuda" if torch.cuda.is_available() else "cpu"
 
-model = models.resnet18(pretrained=True)
-model.fc = nn.Linear(model.fc.in_features, 2)
+    train_ds = ImageFolder("data/train", transform=get_train_transforms())
+    val_ds = ImageFolder("data/val", transform=get_val_transforms())
 
-criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(model.parameters(), lr=1e-4)
+    train_dl = DataLoader(train_ds, batch_size=32, shuffle=True)
+    val_dl = DataLoader(val_ds, batch_size=32)
 
-for epoch in range(5):
-    model.train()
-    for x, y in train_dl:
-        optimizer.zero_grad()
-        loss = criterion(model(x), y)
-        loss.backward()
-        optimizer.step()
+    model = build_model().to(device)
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
+    criterion = nn.CrossEntropyLoss()
 
-torch.save(model.state_dict(), "models/model.pt")
-print("Model saved")
+    for epoch in range(5):
+        model.train()
+        total_loss = 0
+
+        for x, y in train_dl:
+            x, y = x.to(device), y.to(device)
+            optimizer.zero_grad()
+            loss = criterion(model(x), y)
+            loss.backward()
+            optimizer.step()
+            total_loss += loss.item()
+
+        print(f"Epoch {epoch+1}, Loss: {total_loss/len(train_dl):.4f}")
+
+    torch.save(model.state_dict(), "models/model.pt")
+    print("Model saved to models/model.pt")
+
+
+if __name__ == "__main__":
+    train()
