@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: face-mask-inference
+  namespace: face-mask
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: face-mask
+  template:
+    metadata:
+      labels:
+        app: face-mask
+    spec:
+      containers:
+      - name: inference
+        image: face-mask:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8000
