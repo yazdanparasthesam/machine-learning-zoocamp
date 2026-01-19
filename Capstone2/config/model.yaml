@@ -1,0 +1,16 @@
+model:
+  name: resnet18
+  num_classes: 2
+
+training:
+  batch_size: 32
+  epochs: 5
+  learning_rate: 0.0001
+
+data:
+  image_size: 224
+  train_dir: data/train
+  val_dir: data/val
+
+runtime:
+  device: auto

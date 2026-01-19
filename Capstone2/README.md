@@ -273,9 +273,11 @@ distribution to detect data drift.
 ```css
 capstone2-face-mask-k8s/
 │
+├── config/
+│   └── model.yaml
+|
 ├── data/
 │   └── .gitkeep
-│
 |
 ├── k8s/
 │   ├── deployment.yaml
@@ -292,6 +294,7 @@ capstone2-face-mask-k8s/
 |  └── evidently_report.py
 |
 ├── src/
+│   ├── config.py
 │   ├── inference.py
 │   ├── model.py
 │   ├── monitoring.py
