@@ -154,8 +154,8 @@ The solution consists of:
 ---
 
 ```bash
-
 Images are resized to **224×224** and normalized during preprocessing.
+```
 
 ---
 
@@ -183,12 +183,8 @@ The notebook (`notebook.ipynb`) includes:
 ## 🚀 Inference Service
 The trained model is exposed via a **FastAPI REST API**.
 
-### Endpoint
-```
 
-
-## POST /predict
-
+##  Endpoint(POST /predict)
 
 ### Example Request
 ```bash
