@@ -68,16 +68,6 @@ The model can be integrated into surveillance pipelines or image-based monitorin
 
 ---
 
-## 🧠 Solution Overview
-The solution consists of:
-- A **CNN-based image classification model** (ResNet18)
-- A **FastAPI inference service**
-- A **Dockerized deployment**
-- A **Kubernetes (kind) cluster**
-- **Monitoring hooks** for prediction analysis
-
----
-
 ## 🗂️ Dataset Description
 
 The dataset consists of labeled images of human faces collected for the task
@@ -128,8 +118,8 @@ Due to the size of the dataset, it is **not included** in this repository.
 To reproduce the results, download the dataset from one of the following
 public sources and place it in the `data/` directory:
 
-- Kaggle Face Mask Detection Dataset  
-  https://www.kaggle.com/datasets/andrewmvd/face-mask-detection
+- Face Mask Detection Dataset  
+  https://data.mendeley.com/datasets/7bt2d592b9
 
 After downloading, organize the dataset as follows:
 
@@ -148,16 +138,20 @@ data/
 │ └── no_mask/
 
 
-The notebook and training scripts expect this directory structure.
+The notebook and training scripts expect this directory structure.(We split train/validation 80/20.)
 ```
 
 
-### Kaggle CLI Download
 
-```bash
-pip install kaggle
-kaggle datasets download -d andrewmvd/face-mask-detection
-```
+## 🧠 Solution Overview
+The solution consists of:
+- A **CNN-based image classification model** (ResNet18)
+- A **FastAPI inference service**
+- A **Dockerized deployment**
+- A **Kubernetes (kind) cluster**
+- **Monitoring hooks** for prediction analysis
+
+---
 
 ```bash
 
@@ -278,14 +272,14 @@ distribution to detect data drift.
 ---
 
 
-## 📌 Project Structure
+## 🧱 Project Structure
 
 ```css
 capstone2-face-mask-k8s/
 │
 ├── data/
-│   ├── train/
-│   └── val/
+│   └── .gitkeep
+│
 |
 ├── k8s/
 │   ├── deployment.yaml
