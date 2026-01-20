@@ -71,7 +71,7 @@ The model can be integrated into surveillance pipelines or image-based monitorin
 ## 🗂️ Dataset Description
 
 The dataset consists of labeled images of human faces collected for the task
-of face mask classification.
+of face mask classification.This dataset contains a total of 20,347 images belonging to the 2 classes.
 
 Each image belongs to one of two classes:
 - `mask` – the person is wearing a face mask
