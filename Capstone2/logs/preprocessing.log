@@ -1,0 +1,9 @@
+2026-01-21 01:00:22,154 - INFO - Dataset split statistics:
+2026-01-21 01:00:22,155 - INFO - Class: mask
+2026-01-21 01:00:22,155 - INFO -   train: 7074 images
+2026-01-21 01:00:22,155 - INFO -   val: 1516 images
+2026-01-21 01:00:22,155 - INFO -   test: 1517 images
+2026-01-21 01:00:22,155 - INFO - Class: no_mask
+2026-01-21 01:00:22,155 - INFO -   train: 7168 images
+2026-01-21 01:00:22,155 - INFO -   val: 1536 images
+2026-01-21 01:00:22,155 - INFO -   test: 1536 images
