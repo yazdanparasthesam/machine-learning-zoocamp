@@ -448,6 +448,7 @@ capstone2-face-mask-k8s/
 │   └── service.yaml
 |
 ├── logs/
+│   └── preprocessing.log
 │
 ├── models/
 │   └── model.pt
