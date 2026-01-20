@@ -1,5 +1,8 @@
 #✔ Ease of use
 #✔ Professional engineering practice
+split-data:
+	python src/preprocessing.py
+	
 train:
 	python src/train.py
 
