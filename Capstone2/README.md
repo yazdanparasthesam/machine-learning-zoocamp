@@ -141,34 +141,54 @@ data/
 The notebook and training scripts expect this directory structure.(We split train/validation 80/20.)
 ```
 
-
-
 ## 🧠 Solution Overview
-The solution consists of:
-- A **CNN-based image classification model** (ResNet18)
-- A **FastAPI inference service**
-- A **Dockerized deployment**
-- A **Kubernetes (kind) cluster**
-- **Monitoring hooks** for prediction analysis
 
----
+This project implements an **end-to-end deep learning system** for automated
+face mask image classification, covering the full machine learning lifecycle
+from data exploration to production deployment.
 
-```bash
-Images are resized to **224×224** and normalized during preprocessing.
-```
+The solution consists of the following components:
 
----
+1. **Data Exploration & Validation**  
+   - Exploratory data analysis is performed in `notebook.ipynb`
+   - Class balance, image quality, and sample diversity are inspected
+   - The notebook is used only for analysis and experimentation
 
-## 📓 Exploratory Data Analysis (Notebook)
-The notebook (`notebook.ipynb`) includes:
-- Dataset size inspection
-- Visual inspection of sample images
-- Image transformations
-- Baseline CNN training
-- Evaluation metrics (classification report, confusion matrix)
+2. **Model Training**  
+   - A convolutional neural network based on **ResNet18** is trained using
+     transfer learning
+   - Input images are resized to **224×224** and normalized
+   - The model predicts probabilities for two classes: `mask` and `no_mask`
+   - Training and validation logic is implemented in standalone scripts
 
-> The notebook is used **only for exploration and validation**.  
-> Final training and inference are implemented in standalone scripts.
+3. **Inference Service**  
+   - The trained model is served through a **FastAPI** application
+   - A REST endpoint (`POST /predict`) accepts an image and returns class
+     probabilities
+   - The service is stateless and suitable for horizontal scaling
+
+4. **Containerization & Deployment**  
+   - The inference service is packaged into a Docker container
+   - The container is deployed on a local **Kubernetes (kind)** cluster
+   - A Kubernetes Deployment ensures high availability with multiple replicas
+   - A NodePort Service exposes the API for external access
+
+5. **Autoscaling & Monitoring**  
+   - **Horizontal Pod Autoscaling (HPA)** dynamically adjusts the number of pods
+     based on CPU utilization
+   - Prediction outputs are logged for monitoring
+   - **Evidently** is used to analyze prediction distributions and detect
+     potential data drift
+
+6. **Configuration & Reproducibility**  
+   - Model and training parameters are managed via YAML configuration files
+   - Dependencies are managed using `uv` and pinned in `requirements.txt`
+   - The entire system can be reproduced using the provided scripts and manifests
+
+This architecture demonstrates production-ready machine learning practices,
+including modular code, containerized inference, Kubernetes orchestration,
+autoscaling, and monitoring.
+
 
 ---
 
@@ -179,6 +199,25 @@ The notebook (`notebook.ipynb`) includes:
 - Output: Probability of `mask` vs `no_mask`
 
 ---
+
+`Images are resized to **224×224** and normalized during preprocessing.`
+
+
+---
+
+## 📓 Exploratory Data Analysis (Notebook)
+The notebook file (`notebook.ipynb`) includes:
+- Dataset size inspection
+- Visual inspection of sample images
+- Image transformations
+- Baseline CNN training
+- Evaluation metrics (classification report, confusion matrix)
+
+> The `notebook.ipynb` file is used **only for exploration and validation**.  
+> Final training and inference are implemented in standalone scripts.
+
+---
+
 
 ## 🚀 Inference Service
 The trained model is exposed via a **FastAPI REST API**.
@@ -258,18 +297,6 @@ The HPA configuration is defined in:
 ```
 k8s/hpa.yaml
 ```
-
-## 📊 Monitoring
-
-Basic monitoring is implemented by:
-
-- Logging prediction probabilities
-- Tracking class distribution over time
-- Generating drift analysis reports (optional extension with Evidently)
-- Prediction drift is monitored using Evidently.
-- Model predictions are logged and periodically compared against a reference
-distribution to detect data drift.
-
 ---
 
 ## ⚙️ Configuration Management (YAML)
@@ -335,6 +362,19 @@ uv pip compile pyproject.toml -o requirements.txt
 
 The `requirements.txt` file is committed to the repository to ensure
 compatibility with standard Python environments and Docker builds.
+
+
+## 📊 Monitoring
+
+Basic monitoring is implemented by:
+
+- Logging prediction probabilities
+- Tracking class distribution over time
+- Generating drift analysis reports (optional extension with Evidently)
+- Prediction drift is monitored using Evidently.
+- Model predictions are logged and periodically compared against a reference
+distribution to detect data drift.
+
 ## 🧪 Reproducibility
 
 - All dependencies are listed in `requirements.txt`
@@ -345,12 +385,35 @@ compatibility with standard Python environments and Docker builds.
 
 ## 🛠️ Tech Stack
 
-- Python
-- PyTorch
-- FastAPI
-- Docker
-- Kubernetes (kind)
-- NumPy, PIL, torchvision
+### Machine Learning & Deep Learning
+- **PyTorch** – deep learning framework used for model training and inference
+- **torchvision** – pre-trained models, image transformations, and datasets
+- **NumPy** – numerical computations
+- **Pillow (PIL)** – image loading and preprocessing
+
+### API & Inference
+- **FastAPI** – high-performance REST API for model inference
+- **Uvicorn** – ASGI server for running the FastAPI application
+
+### Experimentation & Monitoring
+- **Evidently** – data and prediction drift analysis
+- **Pandas** – data manipulation for monitoring and reporting
+
+### Containerization & Orchestration
+- **Docker** – containerization of the inference service
+- **Kubernetes (kind)** – local Kubernetes cluster for deployment
+- **Horizontal Pod Autoscaler (HPA)** – automatic scaling based on CPU usage
+
+### Configuration & Dependency Management
+- **YAML** – configuration management for model and training parameters
+- **uv** – fast Python dependency management
+- **requirements.txt** – pinned dependencies for reproducibility
+
+### Development & Tooling
+- **Jupyter Notebook** – exploratory data analysis and experimentation
+- **Makefile** – automation of common development tasks
+- **Git & GitHub** – version control and project collaboration
+
 
 ---
 
