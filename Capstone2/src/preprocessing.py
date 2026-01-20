@@ -43,9 +43,9 @@ SPLITS = {
     "test": 0.15,
 }
 
-RAW_DATA_DIR = "data/raw"
-PROCESSED_DATA_DIR = "data/processed"
-LOG_FILE = "logs/preprocessing.log"
+RAW_DATA_DIR = "../data/raw"
+PROCESSED_DATA_DIR = "../data/processed"
+LOG_FILE = "../logs/preprocessing.log"
 
 # =========================
 # Logging Setup
@@ -136,7 +136,7 @@ def create_dataset_splits(
     print("✅ Stratified train/val/test split completed")
 
 
-# =========================
+# =========================/
 # Split Statistics Logging
 # =========================
 
