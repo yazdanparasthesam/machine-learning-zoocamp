@@ -58,7 +58,7 @@ This project is developed as **Capstone 2** for the **Machine Learning Zoomcamp*
 
 ---
 
-## 🎯 Business Problem
+## 🎯 Business Context
 Automatically detecting mask usage can help:
 - Enforce safety regulations in public or industrial environments
 - Reduce manual monitoring costs
@@ -111,7 +111,7 @@ The notebook focuses on understanding the dataset rather than production trainin
 ---
 
 
-## 📦 Dataset Access
+### 📦 Dataset Access
 
 Due to the size of the dataset, it is **not included** in this repository.
 
@@ -234,6 +234,31 @@ kubectl apply -f k8s/
 ```
 ---
 
+
+
+## ☸️ Kubernetes Autoscaling (HPA)
+
+The inference service is deployed on Kubernetes with
+**Horizontal Pod Autoscaling (HPA)** enabled.
+
+The HPA automatically scales the number of running pods based on
+CPU utilization, allowing the system to handle varying workloads efficiently.
+
+### Autoscaling Configuration
+- Minimum replicas: 2
+- Maximum replicas: 6
+- Target CPU utilization: 60%
+
+This ensures:
+- High availability during traffic spikes
+- Efficient resource usage during low traffic
+- Improved production readiness
+
+The HPA configuration is defined in:
+```
+k8s/hpa.yaml
+```
+
 ## 📊 Monitoring
 
 Basic monitoring is implemented by:
@@ -245,12 +270,74 @@ Basic monitoring is implemented by:
 - Model predictions are logged and periodically compared against a reference
 distribution to detect data drift.
 
+---
+
+## ⚙️ Configuration Management (YAML)
+
+Model parameters, training settings, and data paths are managed using
+a dedicated YAML configuration file. This avoids hard-coded values
+and improves reproducibility and maintainability.
+
+### Usage:
+
+The configuration is loaded at runtime by the training and inference scripts,
+allowing easy experimentation and environment-specific overrides without
+modifying the code.
+
+
+### Configuration File
+The main configuration file is located at:
+```
+config/model.yaml
+```
+
+Example configuration:
+
+```yaml
+model:
+  name: resnet18
+  num_classes: 2
+
+training:
+  batch_size: 32
+  epochs: 5
+  learning_rate: 0.0001
+
+data:
+  image_size: 224
+  train_dir: data/train
+  val_dir: data/val
+```
 
 ---
 
+## 📦 Dependency Management
+
+Project dependencies are managed using **uv**, a fast and modern Python
+package manager.
+
+Dependencies are declared in `pyproject.toml` and automatically compiled
+into a reproducible `requirements.txt` file.
+
+### Adding Dependencies
+To add a new dependency:
+
+```bash
+uv add torch torchvision fastapi uvicorn pillow numpy evidently pandas
+```
+
+### Generating requirements.txt
+
+A pinned `requirements.txt` file is generated automatically:
+```bash
+uv pip compile pyproject.toml -o requirements.txt
+```
+
+The `requirements.txt` file is committed to the repository to ensure
+compatibility with standard Python environments and Docker builds.
 ## 🧪 Reproducibility
 
-- All dependencies are listed in requirements.txt
+- All dependencies are listed in `requirements.txt`
 - Training, inference, and deployment are script-based
 - The project can be fully reproduced using the instructions in this README
 
@@ -308,7 +395,7 @@ capstone2-face-mask-k8s/
 └── requirements.txt
 
 ```
----
+
 
 ## ⚠️ Limitations & Future Work
 
