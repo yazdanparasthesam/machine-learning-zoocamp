@@ -43,9 +43,9 @@ SPLITS = {
     "test": 0.15,
 }
 
-RAW_DATA_DIR = "../data/raw"
-PROCESSED_DATA_DIR = "../data/processed"
-LOG_FILE = "../logs/preprocessing.log"
+RAW_DATA_DIR = "data/raw"
+PROCESSED_DATA_DIR = "data/processed"
+LOG_FILE = "logs/preprocessing.log"
 
 # =========================
 # Logging Setup
