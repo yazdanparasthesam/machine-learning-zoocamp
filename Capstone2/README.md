@@ -116,10 +116,14 @@ The notebook focuses on understanding the dataset rather than production trainin
 Due to the size of the dataset, it is **not included** in this repository.
 
 To reproduce the results, download the dataset from one of the following
-public sources and place it in the `data/` directory:
+public sources and place it in the `data/raw` directory:
 
 - Face Mask Detection Dataset  
   https://data.mendeley.com/datasets/7bt2d592b9
+
+- The dataset is split into train, validation, and test sets using a
+reproducible stratified split (70/15/15) implemented in `src/preprocessing.py`.
+- Split statistics are logged for transparency and reproducibility.
 
 After downloading, organize the dataset as follows:
 
@@ -129,7 +133,7 @@ After downloading, organize the dataset as follows:
 ```css
 The dataset is organized into training and validation splits:
 
-data/
+data//processed/
 ├── train/
 │ ├── mask/
 │ └── no_mask/
@@ -379,7 +383,9 @@ distribution to detect data drift.
 
 - All dependencies are listed in `requirements.txt`
 - Training, inference, and deployment are script-based
-- The project can be fully reproduced using the instructions in this README
+- The project can be fully reproduced using the instructions in this `README.md`
+- Preprocessing logic is unit-tested to ensure correct dataset structure
+and reproducible behavior.
 
 ---
 
@@ -450,6 +456,9 @@ capstone2-face-mask-k8s/
 │   ├── monitoring.py
 │   ├── preprocessing.py
 │   └── train.py
+|
+├── tests/
+│   └── test_preprocessing.py
 |
 ├── Dockerfile
 ├── Makefile
