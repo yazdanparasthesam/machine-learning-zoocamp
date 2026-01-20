@@ -1,5 +1,5 @@
 from pathlib import Path
-from src.preprocessing import create_dataset_splits
+from src.preprocessing import create_dataset_splits #src/ is just a folder, not importable 
 
 def test_dataset_split_structure(tmp_path):
     """
