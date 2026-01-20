@@ -193,6 +193,12 @@ This architecture demonstrates production-ready machine learning practices,
 including modular code, containerized inference, Kubernetes orchestration,
 autoscaling, and monitoring.
 
+---
+
+## 🚀 Development
+The source code follows a `src/`-based layout. The `src` directory is treated
+as a Python package to ensure clean imports and compatibility with testing,
+Docker, and CI environments.
 
 ---
 
@@ -450,6 +456,7 @@ capstone2-face-mask-k8s/
 |  └── evidently_report.py
 |
 ├── src/
+│   ├── __init__.py
 │   ├── config.py
 │   ├── inference.py
 │   ├── model.py
