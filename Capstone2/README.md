@@ -398,7 +398,7 @@ and reproducible behavior.
 
 ---
 
-### Deploy on Local and Local Testing
+## 💻 Deploy on Local and Local Testing
 
 Run the inference service locally:
 
@@ -438,6 +438,7 @@ Build the Docker image:
 ```bash
 docker build -t face-mask .
 ```
+![alt text](14-2.png)
 
 Verify the Docker image:
 ```bash
@@ -535,11 +536,15 @@ capstone2-face-mask-k8s/
 ├── tests/
 │   └── test_preprocessing.py
 |
+├── .gitattributes
 ├── Dockerfile
+├── main.py
 ├── Makefile
 ├── notebook.ipynb
+├── pyproject.toml
 ├── README.md
-└── requirements.txt
+├── requirements.txt
+└── uv.lock
 
 ```
 
