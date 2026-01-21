@@ -1,7 +1,8 @@
-#FastAPI inference service
-#✔ Deployment
-#✔ Monitoring
-#✔ API clarity
+# FastAPI inference service
+# ✔ Deployment
+# ✔ Monitoring
+# ✔ API clarity
+
 import torch
 import io
 from fastapi import FastAPI, UploadFile, File
@@ -11,18 +12,52 @@ from model import build_model
 from preprocessing import get_val_transforms
 from monitoring import log_prediction
 
+# =========================
+# App & Runtime Setup
+# =========================
+
 app = FastAPI()
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
-model = build_model()
-model.load_state_dict(torch.load("models/model.pt", map_location=device))
+# Load trained model (no pretrained weights needed at inference time)
+model = build_model(pretrained=False)
+model.load_state_dict(
+    torch.load("models/model.pt", map_location=device)
+)
 model.eval()
 model.to(device)
 
 transform = get_val_transforms()
 classes = ["mask", "no_mask"]
 
+# =========================
+# Health & Metadata Endpoints
+# =========================
+
+@app.get("/health")
+def health():
+    """
+    Health check endpoint for Kubernetes liveness/readiness probes
+    """
+    return {"status": "ok"}
+
+
+@app.get("/info")
+def info():
+    """
+    Model metadata endpoint
+    """
+    return {
+        "model": "resnet18",
+        "num_classes": len(classes),
+        "classes": classes,
+        "device": device,
+    }
+
+# =========================
+# Inference Endpoint
+# =========================
 
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
