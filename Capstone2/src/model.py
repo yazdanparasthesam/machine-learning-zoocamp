@@ -1,5 +1,7 @@
+
 import torch.nn as nn
 import torchvision.models as models
+from torchvision.models import ResNet18_Weights
 
 
 def build_model(
@@ -17,11 +19,15 @@ def build_model(
     """
 
     if name == "resnet18":
-        model = models.resnet18(pretrained=pretrained)
+        weights = (
+            ResNet18_Weights.DEFAULT
+            if pretrained
+            else None
+        )
+        model = models.resnet18(weights=weights)
     else:
         raise ValueError(f"Unsupported model: {name}")
 
-    #classification head
     model.fc = nn.Linear(
         model.fc.in_features,
         num_classes
