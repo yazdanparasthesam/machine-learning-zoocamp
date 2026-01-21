@@ -398,6 +398,22 @@ and reproducible behavior.
 
 ---
 
+### Local Testing
+
+Run the inference service locally:
+
+```bash
+uvicorn src.inference:app --reload --host 0.0.0.0 --port 8000
+```
+
+Test the inference service locally:
+```bash
+curl http://localhost:8000/health
+curl http://localhost:8000/info
+curl -X POST -F "file=@image.jpg" http://localhost:8000/predict
+```
+---
+
 ## 🛠️ Tech Stack
 
 ### Machine Learning & Deep Learning
