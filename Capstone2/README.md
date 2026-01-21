@@ -133,11 +133,14 @@ After downloading, organize the dataset as follows:
 ```css
 The dataset is organized into training and validation splits:
 
-data//processed/
+data/processed/
 ├── train/
 │ ├── mask/
 │ └── no_mask/
 ├── val/
+│ ├── mask/
+│ └── no_mask/
+├── test/
 │ ├── mask/
 │ └── no_mask/
 
