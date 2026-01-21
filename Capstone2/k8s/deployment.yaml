@@ -17,8 +17,34 @@ spec:
         - name: inference
           image: face-mask:latest
           imagePullPolicy: Never
+
           ports:
             - containerPort: 8000
+
+          # -------------------------
+          # Health Checks
+          # -------------------------
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 3
+
+          # -------------------------
+          # Resource Management
+          # -------------------------
           resources:
             requests:
               cpu: "100m"
