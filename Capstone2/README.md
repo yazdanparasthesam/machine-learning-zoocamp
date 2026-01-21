@@ -398,21 +398,69 @@ and reproducible behavior.
 
 ---
 
-### Local Testing
+### Deploy on Local and Local Testing
 
 Run the inference service locally:
 
 ```bash
 uvicorn src.inference:app --reload --host 0.0.0.0 --port 8000
 ```
+![alt text](9.png)
 
-Test the inference service locally:
+Test the inference service health and info locally:
 ```bash
 curl http://localhost:8000/health
 curl http://localhost:8000/info
+```
+![alt text](10.png)
+
+Logs of health and info:
+
+![alt text](11.png)
+
+Test the inference service predict locally:
+
+```bash
 curl -X POST -F "file=@image.jpg" http://localhost:8000/predict
 ```
+![alt text](12.png)
+
+Logs of predict:
+
+![alt text](13.png)
+
 ---
+
+## 🐳 Deploy on Docker
+
+Build the Docker image:
+
+```bash
+docker build -t face-mask .
+```
+
+Verify the Docker image:
+```bash
+docker images | grep face-mask
+```
+
+Run the container:
+```bash
+docker run -p 8001:8000 face-mask
+```
+
+Test endpoints:
+```bash
+curl http://localhost:8001/health
+curl http://localhost:8001/info
+curl -X POST -F "file=@image.jpg" http://localhost:8001/predict
+```
+
+Swagger UI:
+```bash
+http://localhost:8001/docs
+```
+
 
 ## 🛠️ Tech Stack
 
