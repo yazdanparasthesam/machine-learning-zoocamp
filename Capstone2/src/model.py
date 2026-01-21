@@ -21,7 +21,7 @@ def build_model(
     else:
         raise ValueError(f"Unsupported model: {name}")
 
-    # Replace classification head
+    #classification head
     model.fc = nn.Linear(
         model.fc.in_features,
         num_classes
