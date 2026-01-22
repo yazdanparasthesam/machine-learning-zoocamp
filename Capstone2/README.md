@@ -493,7 +493,7 @@ kubectl get hpa -n face-mask
 ```
 ![alt text](39.png)
 
-### 12-Access API from host via kind node IP
+### 12-Access API from host via kind node IP(Method1)
 
 
 ```bash
@@ -501,7 +501,7 @@ docker inspect face-mask-control-plane | grep IPAddress
 ```
 ![alt text](41.png)
 
-Then:
+Then using the found IP address and Nodeport :
 
 ```bash
 curl http://172.18.0.3:30080/health
@@ -513,7 +513,7 @@ curl http://172.18.0.3:30080/info
 
 open in browser
 ```bash
-http://localhost:30080/docs
+http://172.18.0.3:30080/docs
 ```
 ![alt text](40.png)
 
@@ -524,12 +524,30 @@ we can also test health and info and predict from swagger UI as we have done in 
 ```bash
 curl -X POST \
   -F "file=@data/processed/test/mask/with_mask8.png" \
-  http://localhost:30080/predict
+  http://172.18.0.3:30080/predict
 ```
 
 ![alt text](43.png)
 
 ---
+
+### 13-Access API from host via kubectl port-forward(Method2)
+
+Using port-forward based on port and endpoint port in the output of the command `sudo kubectl describe svc face-mask-service -n face-mask`
+```bash
+kubectl port-forward -n face-mask svc/face-mask-service 8000:80
+```
+![alt text](46.png)
+
+Now we can test the /health , /info and /predict for endpoints like below:
+
+
+![alt text](47.png)
+
+we can also see the relevant logs: 
+
+![alt text](48.png)
+
 
 The system is deployed on a local Kubernetes cluster using kind.
 
@@ -723,7 +741,7 @@ python -c "from src.drift import confidence_drift; print(confidence_drift())"
 
 ## Expose drift endpoint
 
-Add to `inference.py`:
+Add below part to `inference.py`:
 ```bash
 from src.drift import confidence_drift
 
