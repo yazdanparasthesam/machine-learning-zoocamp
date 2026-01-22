@@ -291,33 +291,64 @@ Logs of predict:
 
 The inference service is containerized using Docker.
 
+Actually I have implemented Multi-Stage Dockerfile
 
-Build the Docker image:
+### 🧱 Why Multi-Stage Docker?
 
+| Benefit           | Why it matters              |
+| ----------------- | --------------------------- |
+| Smaller image     | No build tools in runtime   |
+| Faster startup    | Lean final container        |
+| Cleaner security  | No compilers / caches       |
+| Industry standard | Used in real ML deployments |
+
+
+### 🧠 Strategy for YOUR project
+
+We’ll split into 2 stages:
+
+Stage 1 — `builder`
+
+Install Python deps
+
+Build wheels
+
+Cache heavy installs (torch)
+
+Stage 2 — `runtime`
+
+Minimal OS
+
+Copy only what’s needed
+
+Run FastAPI
+
+
+#### Build the Docker image:
 ```bash
 docker build -t face-mask .
 ```
 ![alt text](14-3.png)
 
-Verify the Docker image:
+#### Verify the Docker image:
 ```bash
 docker images | grep face-mask
 ```
 
 
-Run the container:
+#### Run the container:
 ```bash
 docker run --rm -p 8001:8000 face-mask:latest
 ```
 
-Test endpoints:
+#### Test endpoints:
 ```bash
 curl http://localhost:8001/health
 curl http://localhost:8001/info
 curl -X POST -F "file=@image.jpg" http://localhost:8001/predict
 ```
 
-Swagger UI:
+#### Swagger UI:
 ```bash
 http://localhost:8001/docs
 ```
