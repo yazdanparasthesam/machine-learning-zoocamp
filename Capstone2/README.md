@@ -303,7 +303,7 @@ Actually I have implemented Multi-Stage Dockerfile
 | Industry standard | Used in real ML deployments |
 
 
-### 🧠 Strategy for YOUR project
+### 🧠 Strategy for My project
 
 We’ll split into 2 stages:
 
@@ -324,38 +324,212 @@ Copy only what’s needed
 Run FastAPI
 
 
-#### Build the Docker image:
+#### 1-Build the Docker image:
 ```bash
 docker build -t face-mask .
 ```
 ![alt text](14-3.png)
 
-#### Verify the Docker image:
+![alt text](15-2.png)
+
+#### 2-Verify the Docker image:
 ```bash
 docker images | grep face-mask
 ```
+![alt text](16-1.png)
 
-
-#### Run the container:
+#### 3-Run the container:
 ```bash
 docker run --rm -p 8001:8000 face-mask:latest
 ```
+![alt text](17-1.png)
 
-#### Test endpoints:
+#### 4-Test endpoints health and info:
+
 ```bash
 curl http://localhost:8001/health
 curl http://localhost:8001/info
+```
+![alt text](18-1.png)
+
+#### 5-Docker logs of health and info:
+
+![alt text](19-1.png)
+
+#### 6-Test endpoints prediction:
+
+```bash
 curl -X POST -F "file=@image.jpg" http://localhost:8001/predict
 ```
+![alt text](20.png)
 
-#### Swagger UI:
+#### 7-Docker logs of prediction:
+
+![alt text](21-1.png)
+
+#### 8-Swagger UI:
 ```bash
 http://localhost:8001/docs
 ```
+![alt text](22.png)
+
+#### 9-Swagger UI docker logs:
+
+![alt text](23.png)
+
+#### 10-Swagger UI health test:
+
+![alt text](24.png)
+
+#### 11-Swagger UI info test:
+
+![alt text](25.png)
+
+#### 12-Swagger UI predict test with image upload:
+
+![alt text](26.png)
 
 ---
 
 ## ☸️ Kubernetes Deployment (kind)
+
+### 1-Install kind
+
+```bash
+curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.22.0/kind-linux-amd64
+chmod +x kind
+sudo mv kind /usr/local/bin/
+```
+![alt text](27.png)
+
+### 2-Verify
+
+```bash
+kind version
+```
+![alt text](28.png)
+
+### 3-Create cluster
+
+```bash
+kind create cluster --name face-mask
+```
+![alt text](29.png)
+
+### 4-Verify
+
+```bash
+kubectl cluster-info
+```
+![alt text](30.png)
+
+### 5-Build Docker image (LOCAL)
+
+we did this step in docker deployment:
+```bash
+docker build -t face-mask .
+```
+
+### 6-Verify
+we did this step in docker deployment:
+```bash
+docker images | grep face-mask
+```
+![alt text](31.png)
+
+### 7-Load Docker image into kind
+⚠️ Critical step — kind does NOT see host Docker images automatically.
+```bash
+kind load docker-image face-mask --name face-mask
+```
+![alt text](32.png)
+
+### 8-Verify
+```bash
+docker ps | grep kind
+docker exec -it face-mask-control-plane crictl images | grep face-mask
+```
+![alt text](33.png)
+
+### 9-Apply Kubernetes manifests
+
+```bash
+kubectl apply -f k8s/namespace.yaml
+kubectl apply -f k8s/deployment.yaml
+kubectl apply -f k8s/service.yaml
+kubectl apply -f k8s/hpa.yaml
+```
+![alt text](34.png)
+
+![alt text](35.png)
+
+### 10-Verify Kubernetes resources ✅
+
+#### 10-1-Pods
+
+```bash
+kubectl get pods -n face-mask
+```
+![alt text](36.png)
+
+#### 10-2-Services
+
+```bash
+kubectl get svc -n face-mask
+```
+![alt text](37.png)
+
+#### 10-3-logs
+
+```bash
+kubectl logs -n face-mask deploy/face-mask-api
+```
+![alt text](38.png)
+
+#### 10-4-HPA
+
+```bash
+kubectl get hpa -n face-mask
+```
+![alt text](39.png)
+
+### 12-Access API from host via kind node IP
+
+
+```bash
+docker inspect face-mask-control-plane | grep IPAddress
+```
+![alt text](41.png)
+
+Then:
+
+```bash
+curl http://172.18.0.3:30080/health
+curl http://172.18.0.3:30080/info
+```
+![alt text](42.png)
+
+#### 12-1-Swagger UI (Kubernetes)
+
+open in browser
+```bash
+http://localhost:30080/docs
+```
+![alt text](40.png)
+
+we can also test health and info and predict from swagger UI as we have done in docker deployment.
+
+#### 12-2-Test `/predict`
+
+```bash
+curl -X POST \
+  -F "file=@data/processed/test/mask/with_mask8.png" \
+  http://localhost:30080/predict
+```
+
+![alt text](43.png)
+
+---
 
 The system is deployed on a local Kubernetes cluster using kind.
 
@@ -365,15 +539,7 @@ Kubernetes resources:
 - Deployment (replicas > 1)
 - NodePort Service
 
-To deploy:
 
-```bash
-kind create cluster --name face-mask
-docker build -t face-mask .
-kind load docker-image face-mask --name face-mask
-
-kubectl apply -f k8s/
-```
 ---
 
 
@@ -396,10 +562,9 @@ This ensures:
 - Efficient resource usage during low traffic
 - Improved production readiness
 
-The HPA configuration is defined in:
-```
-k8s/hpa.yaml
-```
+The HPA configuration is defined in `k8s/hpa.yaml`
+
+
 ---
 
 ## ⚙️ Configuration Management (YAML)
@@ -468,8 +633,9 @@ into a reproducible `requirements.txt` file.
 To add a new dependency:
 
 ```bash
-uv add fastapi uvicorn pillow numpy evidently pandas python-multipart dynaconf
+uv add fastapi uvicorn pillow "numpy<2" evidently pandas python-multipart dynaconf
 ```
+we use NumPy <2 for PyTorch compatibility
 
 ### Generating requirements.txt
 

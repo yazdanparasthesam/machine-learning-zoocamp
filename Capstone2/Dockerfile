@@ -3,12 +3,13 @@
 ############################
 FROM python:3.10-slim AS builder
 
+# Prevent Python from writing pyc files
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
 WORKDIR /build
 
-# System deps needed to compile wheels
+# System deps needed to compile wheels(for PIL / torchvision)
 RUN apt-get update && apt-get install -y \
     build-essential \
     gcc \
@@ -42,6 +43,7 @@ RUN pip wheel --no-cache-dir --no-deps -r requirements.txt -w /wheels
 ############################
 FROM python:3.10-slim AS runtime
 
+# Prevent Python from writing pyc files
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
@@ -61,7 +63,7 @@ COPY --from=builder /usr/local /usr/local
 # Copy built wheels (optional optimization)
 COPY --from=builder /wheels /wheels
 
-# Copy application code
+# Copy application code(copy project)
 COPY src/ src/
 COPY models/ models/
 COPY config/ config/
