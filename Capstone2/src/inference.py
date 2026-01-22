@@ -11,6 +11,8 @@ from PIL import Image
 from src.model import build_model
 from src.preprocessing import get_val_transforms
 from src.monitoring import log_prediction
+from src.drift import confidence_drift
+
 
 # =========================
 # App & Runtime Setup
@@ -55,10 +57,10 @@ def info():
         "device": device,
     }
 
-# =========================
-# Inference Endpoint
-# =========================
-
+# =================================
+# Inference Endpoint for Monitoring
+# =================================
+#Wrap logging in a try/except so inference never fails because of monitoring.
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
     image_bytes = await file.read()
@@ -71,6 +73,18 @@ async def predict(file: UploadFile = File(...)):
         probs = torch.softmax(logits, dim=1).cpu().numpy()[0]
 
     response = dict(zip(classes, probs.tolist()))
-    log_prediction(response)
+
+    # 🔍 Monitoring (non-blocking)
+    try:
+        log_prediction(response)
+    except Exception as e:
+        print(f"[Monitoring warning] {e}")
 
     return response
+
+
+
+@app.get("/drift")
+def drift():
+    return confidence_drift()
+

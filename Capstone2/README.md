@@ -659,6 +659,84 @@ Basic monitoring is implemented by:
 - Model predictions are logged and periodically compared against a reference
 distribution to detect data drift.
 
+The service logs every prediction to disk (`logs/predictions.jsonl`), including:
+- Timestamp
+- Class probabilities
+- Final prediction
+
+This enables:
+- Post-hoc analysis
+- Debugging incorrect predictions
+- Monitoring model behavior in production
+
+### Drift Detection
+A simple confidence-based drift check is implemented, which flags potential drift
+when average prediction confidence drops below a threshold.
+
+I have implemented monitoring in `src/monitoring.py`
+
+Now I should Connect monitoring to `inference.py` in /predic session
+
+Before
+```bash
+probs = {
+    "mask": float(outputs[0]),
+    "no_mask": float(outputs[1])
+}
+return probs
+```
+
+✅ After (with monitoring)
+```bash
+from src.monitoring import log_prediction
+
+probs = {
+    "mask": float(outputs[0]),
+    "no_mask": float(outputs[1])
+}
+
+log_prediction(probs)
+
+return probs
+```
+
+
+
+Every request is now persisted.
+
+![alt text](44.png)
+
+## Drift Report
+
+
+Simple drift detection (confidence drift)
+
+`src/drift.py` created
+
+we can test it like below:
+```bash
+python -c "from src.drift import confidence_drift; print(confidence_drift())"
+```
+
+![alt text](45.png)
+
+
+## Expose drift endpoint
+
+Add to `inference.py`:
+```bash
+from src.drift import confidence_drift
+
+@app.get("/drift")
+def drift():
+    return confidence_drift()
+```
+
+Now:
+```bash
+curl http://172.18.0.3:30080/drift
+```
+
 ## 🧪 Reproducibility
 
 - All dependencies are listed in `requirements.txt`
@@ -724,6 +802,7 @@ capstone2-face-mask-k8s/
 │   └── service.yaml
 |
 ├── logs/
+│   ├── predictions.jsonl
 │   └── preprocessing.log
 │
 ├── models/
@@ -735,6 +814,7 @@ capstone2-face-mask-k8s/
 ├── src/
 │   ├── __init__.py
 │   ├── config.py
+│   ├── drift.py
 │   ├── inference.py
 │   ├── model.py
 │   ├── monitoring.py
