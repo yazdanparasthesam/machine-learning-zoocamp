@@ -363,7 +363,7 @@ into a reproducible `requirements.txt` file.
 To add a new dependency:
 
 ```bash
-uv add torch torchvision fastapi uvicorn pillow numpy evidently pandas
+uv add fastapi uvicorn pillow numpy evidently pandas python-multipart dynaconf
 ```
 
 ### Generating requirements.txt
@@ -440,14 +440,17 @@ docker build -t face-mask .
 ```
 ![alt text](14-2.png)
 
+![alt text](15.png)
+
 Verify the Docker image:
 ```bash
 docker images | grep face-mask
 ```
+![alt text](16.png)
 
 Run the container:
 ```bash
-docker run -p 8001:8000 face-mask
+docker run --rm -p 8001:8000 face-mask:latest
 ```
 
 Test endpoints:

@@ -8,9 +8,9 @@ import io
 from fastapi import FastAPI, UploadFile, File
 from PIL import Image
 
-from model import build_model
-from preprocessing import get_val_transforms
-from monitoring import log_prediction
+from src.model import build_model
+from src.preprocessing import get_val_transforms
+from src.monitoring import log_prediction
 
 # =========================
 # App & Runtime Setup
