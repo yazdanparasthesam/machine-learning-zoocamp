@@ -252,17 +252,76 @@ curl -X POST \
   "no_mask": 0.13
 }
 ```
+---
 
+## 💻 Deploy on Local and Local Testing
+
+Run the inference service locally:
+
+```bash
+uvicorn src.inference:app --reload --host 0.0.0.0 --port 8000
+```
+![alt text](9.png)
+
+Test the inference service health and info locally:
+```bash
+curl http://localhost:8000/health
+curl http://localhost:8000/info
+```
+![alt text](10.png)
+
+Logs of health and info:
+
+![alt text](11.png)
+
+Test the inference service predict locally:
+
+```bash
+curl -X POST -F "file=@image.jpg" http://localhost:8000/predict
+```
+![alt text](12.png)
+
+Logs of predict:
+
+![alt text](13.png)
+
+---
 
 ## 🐳 Containerization
 
 The inference service is containerized using Docker.
 
-To build the image:
+
+Build the Docker image:
 
 ```bash
 docker build -t face-mask .
 ```
+![alt text](14-3.png)
+
+Verify the Docker image:
+```bash
+docker images | grep face-mask
+```
+
+
+Run the container:
+```bash
+docker run --rm -p 8001:8000 face-mask:latest
+```
+
+Test endpoints:
+```bash
+curl http://localhost:8001/health
+curl http://localhost:8001/info
+curl -X POST -F "file=@image.jpg" http://localhost:8001/predict
+```
+
+Swagger UI:
+```bash
+http://localhost:8001/docs
+```
+
 ---
 
 ## ☸️ Kubernetes Deployment (kind)
@@ -337,16 +396,31 @@ Example configuration:
 model:
   name: resnet18
   num_classes: 2
+  pretrained: true
 
 training:
   batch_size: 32
   epochs: 5
   learning_rate: 0.0001
+  optimizer: adam
+  loss: cross_entropy
 
 data:
   image_size: 224
-  train_dir: data/train
-  val_dir: data/val
+  raw_dir: data/raw
+  processed_dir: data/processed
+  train_dir: data/processed/train
+  val_dir: data/processed/val
+  test_dir: data/processed/test
+  train_split: 0.7
+  val_split: 0.15
+  test_split: 0.15
+  random_seed: 42
+
+runtime:
+  device: auto
+  num_workers: 2
+  pin_memory: true
 ```
 
 ---
@@ -397,73 +471,6 @@ distribution to detect data drift.
 and reproducible behavior.
 
 ---
-
-## 💻 Deploy on Local and Local Testing
-
-Run the inference service locally:
-
-```bash
-uvicorn src.inference:app --reload --host 0.0.0.0 --port 8000
-```
-![alt text](9.png)
-
-Test the inference service health and info locally:
-```bash
-curl http://localhost:8000/health
-curl http://localhost:8000/info
-```
-![alt text](10.png)
-
-Logs of health and info:
-
-![alt text](11.png)
-
-Test the inference service predict locally:
-
-```bash
-curl -X POST -F "file=@image.jpg" http://localhost:8000/predict
-```
-![alt text](12.png)
-
-Logs of predict:
-
-![alt text](13.png)
-
----
-
-## 🐳 Deploy on Docker
-
-Build the Docker image:
-
-```bash
-docker build -t face-mask .
-```
-![alt text](14-2.png)
-
-![alt text](15.png)
-
-Verify the Docker image:
-```bash
-docker images | grep face-mask
-```
-![alt text](16.png)
-
-Run the container:
-```bash
-docker run --rm -p 8001:8000 face-mask:latest
-```
-
-Test endpoints:
-```bash
-curl http://localhost:8001/health
-curl http://localhost:8001/info
-curl -X POST -F "file=@image.jpg" http://localhost:8001/predict
-```
-
-Swagger UI:
-```bash
-http://localhost:8001/docs
-```
 
 
 ## 🛠️ Tech Stack
