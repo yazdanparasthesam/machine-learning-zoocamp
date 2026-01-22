@@ -719,6 +719,7 @@ capstone2-face-mask-k8s/
 ├── k8s/
 │   ├── deployment.yaml
 │   ├── hpa.yaml
+│   ├── load_test.py
 |   ├── namespace.yaml
 │   └── service.yaml
 |
