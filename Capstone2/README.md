@@ -754,6 +754,10 @@ Now:
 ```bash
 curl http://172.18.0.3:30080/drift
 ```
+Monitoring is implemented by logging every prediction (timestamp, class
+probabilities, and predicted label) to disk. This enables post-hoc analysis
+and basic drift detection.
+
 
 ## 🧪 Reproducibility
 
@@ -764,6 +768,65 @@ curl http://172.18.0.3:30080/drift
 and reproducible behavior.
 
 ---
+
+## ✅ Kubernetes Service Testing (Face Mask API)
+
+While the Kuber pods are running, you can test the API using the provided verification script:
+
+### Run the verification script:
+
+```bash
+python3 K8sVerify.py
+```
+
+### Script Content (K8sVerify.py):
+
+```bash
+import requests
+
+URL = "http://localhost:8000/predict"
+IMAGE_PATH = "data/processed/test/mask/with_mask8.png"
+
+with open(IMAGE_PATH, "rb") as f:
+    files = {"file": f}
+    response = requests.post(URL, files=files)
+
+print("Status code:", response.status_code)
+print("Prediction:", response.json())
+```
+
+### System Architecture
+
+```bash
+Client
+  ↓
+Kubernetes Service (NodePort)
+  ↓
+FastAPI Inference API
+  ↓
+PyTorch CNN (ResNet18)
+  ↓
+Prediction + Monitoring Logs
+```
+
+### Example API Request
+
+```bash
+curl -X POST \
+  -F "file=@data/processed/test/mask/with_mask8.png" \
+  http://172.18.0.3:30080/predict
+```
+
+### Example API Response
+
+```json
+{
+  "mask": 0.97,
+  "no_mask": 0.03
+}
+```
+
+![alt text](49.png)
 
 
 ## 🛠️ Tech Stack
@@ -844,6 +907,7 @@ capstone2-face-mask-k8s/
 |
 ├── .gitattributes
 ├── Dockerfile
+├── K8sVerify.py
 ├── main.py
 ├── Makefile
 ├── notebook.ipynb
