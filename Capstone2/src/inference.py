@@ -11,7 +11,10 @@ from PIL import Image
 from src.model import build_model
 from src.preprocessing import get_val_transforms
 from src.monitoring import log_prediction
+#Add /drift endpoint to inference.py
 from src.drift import confidence_drift
+from src.drift import basic_drift_summary
+
 
 
 # =========================
@@ -83,8 +86,15 @@ async def predict(file: UploadFile = File(...)):
     return response
 
 
-
+#Add /drift endpoint to inference.py
 @app.get("/drift")
 def drift():
     return confidence_drift()
 
+#Add /driftsummary endpoint to inference.py
+@app.get("/driftsummary")
+def driftsummary():
+    """
+    Basic drift monitoring endpoint
+    """
+    return basic_drift_summary()

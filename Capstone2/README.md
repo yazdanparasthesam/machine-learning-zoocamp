@@ -741,19 +741,39 @@ python -c "from src.drift import confidence_drift; print(confidence_drift())"
 
 ## Expose drift endpoint
 
-Add below part to `inference.py`:
-```bash
-from src.drift import confidence_drift
+Add /driftsummary endpoint to inference.py
 
-@app.get("/drift")
-def drift():
-    return confidence_drift()
+
+### 🧪 Test It
+```bash
+curl http://localhost:8000/drift
+curl http://localhost:8000/driftsummary
 ```
 
-Now:
-```bash
-curl http://172.18.0.3:30080/drift
+Possible outputs:
+
+Before predictions
+```json
+{
+  "status": "no_data",
+  "message": "No predictions logged yet"
+}
 ```
+
+After predictions
+```json
+{
+  "status": "ok",
+  "num_predictions": 42,
+  "mask_rate": 0.61,
+  "no_mask_rate": 0.39,
+  "time_range": {
+    "start": "2026-01-22T18:01:02.123Z",
+    "end": "2026-01-22T18:10:44.912Z"
+  }
+}
+```
+
 Monitoring is implemented by logging every prediction (timestamp, class
 probabilities, and predicted label) to disk. This enables post-hoc analysis
 and basic drift detection.
