@@ -161,7 +161,7 @@ The solution consists of the following components:
    - Class balance, image quality, and sample diversity are inspected
    - The notebook is used only for analysis and experimentation
 
-2. **Model Training**  
+2. **Model Training and Tuning**  
    - A convolutional neural network based on **ResNet18** is trained using
      transfer learning
    - Input images are resized to **224×224** and normalized
@@ -205,29 +205,36 @@ Docker, and CI environments.
 
 ---
 
-## 🧠 Model
-- Architecture: **ResNet18 (transfer learning)**
-- Loss function: Cross-Entropy Loss
-- Optimizer: Adam
-- Output: Probability of `mask` vs `no_mask`
-
----
-
-`Images are resized to **224×224** and normalized during preprocessing.`
-
-
----
-
-## 📓 Exploratory Data Analysis (Notebook)
+## 📓 Exploratory Data Analysis & Feature Analysis (Notebook)
 The notebook file (`notebook.ipynb`) includes:
 - Dataset size inspection
 - Visual inspection of sample images
+- The dataset is splitting into train, validation, and test sets using a
+reproducible stratified split (70/15/15) implemented in `src/preprocessing.py`.
 - Image transformations
 - Baseline CNN training
 - Evaluation metrics (classification report, confusion matrix)
 
 > The `notebook.ipynb` file is used **only for exploration and validation**.  
 > Final training and inference are implemented in standalone scripts.
+
+![alt text](1.png)
+
+---
+
+## 🤖 Model Training & Tuning
+- Architecture: **ResNet18 (transfer learning)**
+- Loss function: Cross-Entropy Loss
+- Optimizer: Adam
+- Output: Probability of `mask` vs `no_mask`
+- Hyperparameters passed to model via `config/model.py` file
+
+![alt text](6.png)
+
+---
+
+`Images are resized to **224×224** and normalized during preprocessing.`
+
 
 ---
 
@@ -391,7 +398,7 @@ http://localhost:8001/docs
 
 ---
 
-## ☸️ Kubernetes Deployment (kind)
+## ☸️ Kubernetes Orchestration (kind)
 
 ### 1-Install kind
 
@@ -779,7 +786,7 @@ probabilities, and predicted label) to disk. This enables post-hoc analysis
 and basic drift detection.
 
 
-## 🧪 Reproducibility
+## 🔁 Reproducibility
 
 - All dependencies are listed in `requirements.txt`
 - Training, inference, and deployment are script-based
