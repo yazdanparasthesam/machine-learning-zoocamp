@@ -589,6 +589,63 @@ This ensures:
 
 The HPA configuration is defined in `k8s/hpa.yaml`
 
+### 1-Metric server Implementation on kind
+
+```bash
+sudo docker pull dyrnq/metrics-server:v0.8.0
+sudo docker tag dyrnq/metrics-server:v0.8.0 registry.k8s.io/metrics-server/metrics-server:v0.8.0
+sudo docker images | grep metric
+sudo kind load docker-image   registry.k8s.io/metrics-server/metrics-server:v0.8.0   --name face-mask
+sudo kubectl delete deployment metrics-server -n kube-system
+sudo kubectl delete service metrics-server -n kube-system
+sudo kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+sudo kubectl get pods -n kube-system | grep metrics
+sudo kubectl patch deployment metrics-server -n kube-system --type='json' -p='[{"op": "add", "path": "/spec/template/spec/containers/0/args/-", "value": "--kubelet-insecure-tls"}]'
+sudo kubectl get pods -n kube-system | grep metrics
+sudo kubectl logs -n kube-system deploy/metrics-server
+```
+
+![alt text](50.png)
+
+![alt text](51.png)
+
+![alt text](52.png)
+
+![alt text](53.png)
+
+![alt text](54.png)
+
+
+### 2-Add CPU requests to your Deployment
+
+![alt text](55.png)
+
+### 3- apply the changes , redeploy the pods and wait
+
+![alt text](56.png)
+
+
+### 4-apply the HPA yaml
+
+note in `hpa.yaml` the `scaleTargetRef` should be the name in the  `deployment.yaml`
+
+![alt text](61.png)
+
+now we see the hpa is measure the cpu usage properly.
+
+![alt text](57.png)
+
+
+### 5-send requests to kind using port-forward and run the `load_test.py` to increase the CPU of the pods
+
+![alt text](58.png)
+
+![alt text](59.png)
+
+### 6-we see after CPU exeeds 60% the number of pods increased
+
+![alt text](60.png)
+
 
 ---
 
