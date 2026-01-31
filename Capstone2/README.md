@@ -131,7 +131,7 @@ After downloading, organize the dataset as follows:
 
 ### Dataset structure:
 ```css
-The dataset is organized into training and validation splits:
+The dataset is organized into training, validation and test  splits:
 
 data/processed/
 ├── train/
@@ -145,7 +145,7 @@ data/processed/
 │ └── no_mask/
 
 
-The notebook and training scripts expect this directory structure.(We split train/validation 80/20.)
+The notebook and training scripts expect this directory structure.(We split train/validation/test 70/15/15.)
 ```
 
 ## 🧠 Solution Overview
