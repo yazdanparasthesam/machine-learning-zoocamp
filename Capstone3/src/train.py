@@ -1,38 +1,35 @@
-# Production-style training script (NLP / Transformer)
+# Production-style training script (Fake News Detection - NLP / Transformer)
 # ✔ Reproducibility
 # ✔ Script-based training
 # ✔ Notebook separation
 # ✔ YAML-driven configuration
+# ✔ Config-driven model creation
 
 from pathlib import Path
 import torch
 from torch import nn
 from tqdm import tqdm
-import yaml
 
 from transformers import (
     DistilBertTokenizerFast,
-    DistilBertForSequenceClassification,
     AdamW,
 )
 
 from src.preprocessing import load_and_split_dataset
 from src.data_loader import create_dataloaders
+from src.model import build_model
+from config.config import load_config
 
 
 # =========================
 # Load Configuration
 # =========================
 
-with open("config/model.py", "r") as f:
-    cfg = yaml.safe_load(f)
+cfg = load_config("config/model.yaml")
 
 BATCH_SIZE = cfg["training"]["batch_size"]
 EPOCHS = cfg["training"]["epochs"]
 LR = float(cfg["training"]["learning_rate"])
-
-MODEL_NAME = cfg["model"]["name"]
-NUM_CLASSES = cfg["model"]["num_classes"]
 
 TRAIN_FILE = cfg["data"]["train_file"]
 VAL_FILE = cfg["data"]["val_file"]
@@ -42,7 +39,6 @@ MAX_LEN = cfg["data"]["max_length"]
 DEVICE_CFG = cfg["runtime"]["device"]
 NUM_WORKERS = cfg["runtime"]["num_workers"]
 PIN_MEMORY = cfg["runtime"]["pin_memory"]
-
 MODEL_PATH = "models/model.pt"
 
 
@@ -72,7 +68,7 @@ def train():
     # --------------------------------------------------
     # Tokenizer
     # --------------------------------------------------
-    tokenizer = DistilBertTokenizerFast.from_pretrained(MODEL_NAME)
+    tokenizer = DistilBertTokenizerFast.from_pretrained(cfg["model"]["name"])
 
     # --------------------------------------------------
     # DataLoaders
@@ -87,11 +83,12 @@ def train():
     )
 
     # --------------------------------------------------
-    # Model
+    # Model (config-driven)
     # --------------------------------------------------
-    model = DistilBertForSequenceClassification.from_pretrained(
-        MODEL_NAME,
-        num_labels=NUM_CLASSES,
+    model = build_model(
+        name=cfg["model"]["name"],
+        num_classes=cfg["model"]["num_classes"],
+        pretrained=cfg["model"]["pretrained"],
     ).to(device)
 
     # --------------------------------------------------
