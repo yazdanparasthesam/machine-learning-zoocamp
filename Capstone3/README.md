@@ -211,6 +211,27 @@ The notebook file (`notebook.ipynb`) includes:
 
 ---
 
+## 📝 Notebook Overview
+
+This project includes **two separate notebooks** to explore and experiment with different approaches to fake news detection:
+
+1. **TF-IDF + Classical ML Notebook(notebook1)**  
+   - Implements baseline models using **TF-IDF text features**.  
+   - Experiments with algorithms such as Logistic Regression, Random Forest, and SVM.  
+   - Provides **quick insights** on feature importance and baseline performance.  
+   - Useful for **understanding dataset structure** and **establishing a benchmark**.
+
+2. **Transformer-based Notebook(notebook2) (BERT / DistilBERT)**  
+   - Implements **state-of-the-art NLP models** using **pretrained Transformers**.  
+   - Handles tokenization, sequence length, attention masks, and fine-tuning.  
+   - Provides **higher accuracy and more robust predictions** compared to TF-IDF baselines.  
+   - Used as the **final production model** for training and inference.
+
+> Having both notebooks allows for **progressive model development**:  
+> first exploring simple features and classical ML, then moving to more complex **deep learning approaches** for production-grade performance.
+
+---
+
 ## 🤖 Model Training & Tuning
 - Architecture: **DistilBERT (Transformer-based model, transfer learning)**
 - Loss function: Cross-Entropy Loss
