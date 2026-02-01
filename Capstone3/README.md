@@ -1,4 +1,4 @@
-# Fake News Detection – Capstone Project (ML Zoomcamp)
+# Fake News Detection – Capstone3 Project (ML Zoomcamp)
 
 ## 🎯 Problem Description
 The rapid spread of misinformation and fake news through online platforms has become a serious societal challenge. Manual verification of news articles by human fact-checkers is slow, expensive, and does not scale to the massive volume of content produced every day.
