@@ -133,17 +133,50 @@ After downloading, organize the dataset as follows:
 ---
 
 ### Dataset structure:
-```css
-The dataset is organized into training and validation splits:
 
+The raw dataset consists of two separate files (`fake.csv` and `true.csv`).
+During preprocessing, these files are merged, labeled, cleaned, and split
+into train, validation, and test sets, which are saved as CSV files under
+`data/processed/`.
+
+
+Each file contains a `text` column representing the news content.
+
+### 🏷 Labeling
+- `fake` → label `0`
+- `real` → label `1`
+
+### 🧹 Preprocessing Steps
+The preprocessing pipeline performs:
+- Lowercasing text
+- Removing URLs, digits, and punctuation
+- Merging fake and real datasets
+- Stratified splitting into:
+  - **Train**
+  - **Validation**
+  - **Test**
+
+### 📁 Output Structure
+After running:
+```bash
+python src/preprocessing.py
+```
+The following files are generated:
+```css
 data/processed/
 ├── train.csv
 ├── val.csv
 └── test.csv
+```
 
+![alt text](1.png)
+
+we can see the preprocessing logs in `logs/preprocessing.log`
+
+![alt text](2.png)
 
 The notebook and training scripts expect this directory structure.(We split train/validation/test 70/15/15.)
-```
+
 ## 🧠 Solution Overview
 
 This project implements an **end-to-end NLP system** for automated fake news detection, covering the full machine learning lifecycle from data exploration to production deployment.
@@ -215,13 +248,13 @@ The notebook file (`notebook.ipynb`) includes:
 
 This project includes **two separate notebooks** to explore and experiment with different approaches to fake news detection:
 
-1. **TF-IDF + Classical ML Notebook(notebook1)**  
+1. **TF-IDF + Classical ML Notebook(tfidf_experiments.ipynb)**  
    - Implements baseline models using **TF-IDF text features**.  
    - Experiments with algorithms such as Logistic Regression, Random Forest, and SVM.  
    - Provides **quick insights** on feature importance and baseline performance.  
    - Useful for **understanding dataset structure** and **establishing a benchmark**.
 
-2. **Transformer-based Notebook(notebook2) (BERT / DistilBERT)**  
+2. **Transformer-based Notebook(bert_exploration.ipynb) (BERT / DistilBERT)**  
    - Implements **state-of-the-art NLP models** using **pretrained Transformers**.  
    - Handles tokenization, sequence length, attention masks, and fine-tuning.  
    - Provides **higher accuracy and more robust predictions** compared to TF-IDF baselines.  
@@ -229,6 +262,94 @@ This project includes **two separate notebooks** to explore and experiment with 
 
 > Having both notebooks allows for **progressive model development**:  
 > first exploring simple features and classical ML, then moving to more complex **deep learning approaches** for production-grade performance.
+
+---
+
+## 🧠 TF-IDF vs BERT: Preprocessing Differences
+
+This project includes **two separate notebooks** for text representation and modeling:
+- **TF-IDF + Classical ML**
+- **BERT (Transformer-based Deep Learning)**
+
+They intentionally use **different preprocessing strategies**, because these models learn language in fundamentally different ways.
+
+---
+
+### 📄 TF-IDF Preprocessing (tfidf_experiments.ipynb)
+
+TF-IDF relies on **explicit word statistics**, so heavier text normalization is required to reduce noise and dimensionality.
+
+**Applied steps:**
+- Lowercasing all text
+- Removing URLs
+- Removing digits and punctuation
+- Stripping extra whitespace
+- Optional stopword removal and n-grams
+- Vectorization using `TfidfVectorizer`
+
+**Why this matters:**
+- TF-IDF treats text as a **bag of words**
+- Noise directly increases feature space
+- Cleaning improves signal-to-noise ratio and model stability
+
+**Best suited for:**
+- Linear models (Logistic Regression, SVM)
+- Fast experimentation and baselines
+- Interpretability (feature importance)
+
+---
+
+### 🤖 BERT Preprocessing (bert_exploration.ipynb)
+
+BERT is pretrained on **raw natural language** and uses **subword tokenization**, so minimal cleaning is applied.
+
+**Applied steps:**
+- Lowercasing (handled internally by tokenizer)
+- Tokenization using `DistilBertTokenizer`
+- Padding and truncation to fixed sequence length
+- Attention mask generation
+
+**Not applied:**
+- ❌ Stopword removal  
+- ❌ Aggressive punctuation removal  
+- ❌ Manual token splitting  
+
+**Why this matters:**
+- BERT learns **context and syntax**
+- Removing words or punctuation can harm meaning
+- The tokenizer is optimized for pretrained weights
+
+**Best suited for:**
+- Context-aware classification
+- Higher accuracy on complex language
+- Production-grade NLP systems
+
+---
+
+### 🔍 Why Two Notebooks Are Necessary
+
+| Aspect | TF-IDF | BERT |
+|------|-------|------|
+| Feature type | Sparse vectors | Dense contextual embeddings |
+| Preprocessing | Heavy | Minimal |
+| Training speed | Very fast | Slower (GPU preferred) |
+| Interpretability | High | Lower |
+| Accuracy ceiling | Medium | High |
+
+Keeping these pipelines **separate and explicit**:
+- Improves clarity
+- Avoids incorrect preprocessing reuse
+- Demonstrates understanding of NLP fundamentals
+- Makes experimental comparison fair and reproducible
+
+---
+
+### ✅ Takeaway
+
+> **Preprocessing is model-dependent.**  
+> Applying TF-IDF cleaning rules to BERT would degrade performance, while using raw text with TF-IDF would introduce noise.
+
+This project deliberately separates both approaches to ensure **correct, principled, and production-ready NLP workflows**.
 
 ---
 
@@ -245,6 +366,7 @@ This project includes **two separate notebooks** to explore and experiment with 
 
 Text inputs are tokenized using the **DistilBERT tokenizer**, padded and truncated
 to a maximum sequence length (**512 tokens**) during preprocessing.
+
 
 ## 🚀 Inference Service
 

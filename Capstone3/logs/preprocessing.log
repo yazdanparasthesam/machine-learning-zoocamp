@@ -1,0 +1,13 @@
+2026-02-01 17:32:54,082 - INFO - Running preprocessing script directly
+2026-02-01 17:32:54,082 - INFO - Starting preprocessing pipeline
+2026-02-01 17:32:54,083 - INFO - Loading raw datasets
+2026-02-01 17:32:57,211 - INFO - Combined dataset size: 44898
+2026-02-01 17:32:57,212 - INFO - Cleaning text data
+2026-02-01 17:33:08,824 - INFO - Splitting dataset into train/val/test
+2026-02-01 17:33:21,534 - INFO - Preprocessing completed successfully
+2026-02-01 17:33:21,535 - INFO - Train size: 31428
+2026-02-01 17:33:21,535 - INFO - Validation size: 6735
+2026-02-01 17:33:21,535 - INFO - Test size: 6735
+2026-02-01 17:33:21,535 - INFO - Train class distribution:
+2026-02-01 17:33:21,546 - INFO - {0: 16437, 1: 14991}
+2026-02-01 17:33:21,621 - INFO - Preprocessing script finished

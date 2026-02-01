@@ -1,35 +1,61 @@
-# Production-style training script (Fake News Detection - NLP / Transformer)
+# src/train.py
+# Production-style training script (NLP / Transformer)
 # ✔ Reproducibility
 # ✔ Script-based training
-# ✔ Notebook separation
 # ✔ YAML-driven configuration
-# ✔ Config-driven model creation
+# ✔ Logging
 
 from pathlib import Path
+import logging
 import torch
 from torch import nn
 from tqdm import tqdm
+import yaml
 
 from transformers import (
     DistilBertTokenizerFast,
+    DistilBertForSequenceClassification,
     AdamW,
 )
 
 from src.preprocessing import load_and_split_dataset
 from src.data_loader import create_dataloaders
-from src.model import build_model
-from config.config import load_config
+
+
+# =========================
+# Logging Setup
+# =========================
+
+LOG_DIR = Path("logs")
+LOG_DIR.mkdir(exist_ok=True)
+
+logging.basicConfig(
+    filename=LOG_DIR / "training.log",
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+)
+
+logger = logging.getLogger(__name__)
+
+# also log to console
+console = logging.StreamHandler()
+console.setLevel(logging.INFO)
+logger.addHandler(console)
 
 
 # =========================
 # Load Configuration
 # =========================
 
-cfg = load_config("config/model.yaml")
+with open("config/model.yaml", "r") as f:
+    cfg = yaml.safe_load(f)
 
 BATCH_SIZE = cfg["training"]["batch_size"]
 EPOCHS = cfg["training"]["epochs"]
 LR = float(cfg["training"]["learning_rate"])
+
+MODEL_NAME = cfg["model"]["name"]
+NUM_CLASSES = cfg["model"]["num_classes"]
 
 TRAIN_FILE = cfg["data"]["train_file"]
 VAL_FILE = cfg["data"]["val_file"]
@@ -39,7 +65,8 @@ MAX_LEN = cfg["data"]["max_length"]
 DEVICE_CFG = cfg["runtime"]["device"]
 NUM_WORKERS = cfg["runtime"]["num_workers"]
 PIN_MEMORY = cfg["runtime"]["pin_memory"]
-MODEL_PATH = "models/model.pt"
+
+MODEL_PATH = Path("models/model.pt")
 
 
 # =========================
@@ -47,17 +74,24 @@ MODEL_PATH = "models/model.pt"
 # =========================
 
 def train():
-    # Device selection
+    logger.info("Starting training pipeline")
+
+    # --------------------------------------------------
+    # Device
+    # --------------------------------------------------
     if DEVICE_CFG == "auto":
         device = "cuda" if torch.cuda.is_available() else "cpu"
     else:
         device = DEVICE_CFG
 
+    logger.info(f"Using device: {device}")
     torch.manual_seed(cfg["data"]["random_seed"])
 
     # --------------------------------------------------
     # Load & preprocess dataset
     # --------------------------------------------------
+    logger.info("Loading and splitting dataset")
+
     train_df, val_df, test_df = load_and_split_dataset(
         csv_path=TRAIN_FILE,
         test_size=cfg["data"]["test_split"],
@@ -65,10 +99,16 @@ def train():
         random_state=cfg["data"]["random_seed"],
     )
 
+    logger.info(
+        f"Dataset sizes — Train: {len(train_df)}, "
+        f"Val: {len(val_df)}, Test: {len(test_df)}"
+    )
+
     # --------------------------------------------------
     # Tokenizer
     # --------------------------------------------------
-    tokenizer = DistilBertTokenizerFast.from_pretrained(cfg["model"]["name"])
+    logger.info(f"Loading tokenizer: {MODEL_NAME}")
+    tokenizer = DistilBertTokenizerFast.from_pretrained(MODEL_NAME)
 
     # --------------------------------------------------
     # DataLoaders
@@ -83,12 +123,15 @@ def train():
     )
 
     # --------------------------------------------------
-    # Model (config-driven)
+    # Model
     # --------------------------------------------------
-    model = build_model(
-        name=cfg["model"]["name"],
-        num_classes=cfg["model"]["num_classes"],
-        pretrained=cfg["model"]["pretrained"],
+    logger.info(
+        f"Initializing model: {MODEL_NAME} | num_classes={NUM_CLASSES}"
+    )
+
+    model = DistilBertForSequenceClassification.from_pretrained(
+        MODEL_NAME,
+        num_labels=NUM_CLASSES,
     ).to(device)
 
     # --------------------------------------------------
@@ -98,9 +141,11 @@ def train():
     criterion = nn.CrossEntropyLoss()
 
     # --------------------------------------------------
-    # Training loop
+    # Training Loop
     # --------------------------------------------------
     for epoch in range(EPOCHS):
+        logger.info(f"Epoch {epoch+1}/{EPOCHS} started")
+
         model.train()
         total_loss = 0.0
 
@@ -123,11 +168,12 @@ def train():
 
             total_loss += loss.item()
 
+        avg_train_loss = total_loss / len(train_dl)
         val_loss, val_acc = evaluate(model, val_dl, criterion, device)
 
-        print(
-            f"Epoch [{epoch+1}/{EPOCHS}] "
-            f"Train Loss: {total_loss / len(train_dl):.4f} | "
+        logger.info(
+            f"Epoch {epoch+1} | "
+            f"Train Loss: {avg_train_loss:.4f} | "
             f"Val Loss: {val_loss:.4f} | "
             f"Val Acc: {val_acc:.4f}"
         )
@@ -135,10 +181,16 @@ def train():
     # --------------------------------------------------
     # Save model
     # --------------------------------------------------
-    Path("models").mkdir(exist_ok=True)
+    MODEL_PATH.parent.mkdir(exist_ok=True)
     torch.save(model.state_dict(), MODEL_PATH)
-    print(f"✅ Model saved to {MODEL_PATH}")
 
+    logger.info(f"Model saved to {MODEL_PATH}")
+    logger.info("Training completed successfully")
+
+
+# =========================
+# Evaluation
+# =========================
 
 def evaluate(model, dataloader, criterion, device):
     model.eval()
@@ -164,10 +216,7 @@ def evaluate(model, dataloader, criterion, device):
             correct += (preds == labels).sum().item()
             total += labels.size(0)
 
-    avg_loss = total_loss / len(dataloader)
-    accuracy = correct / total
-
-    return avg_loss, accuracy
+    return total_loss / len(dataloader), correct / total
 
 
 # =========================
@@ -175,4 +224,8 @@ def evaluate(model, dataloader, criterion, device):
 # =========================
 
 if __name__ == "__main__":
-    train()
+    try:
+        train()
+    except Exception as e:
+        logger.exception("Training failed due to an unexpected error")
+        raise
