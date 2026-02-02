@@ -98,6 +98,15 @@ def load_and_split_dataset(
     if "text" not in df.columns:
         logger.error("Missing 'text' column in dataset")
         raise ValueError("Dataset must contain a 'text' column")
+        
+    # --------------------------------------------------
+    # Enforce label type (CRITICAL)
+    # --------------------------------------------------
+    df["label"] = df["label"].astype("int64")
+
+    # Safety check
+    assert set(df["label"].unique()) <= {0, 1}, "Invalid labels detected"
+ 
 
     # --------------------------------------------------
     # Clean text
@@ -127,6 +136,13 @@ def load_and_split_dataset(
     )
 
     # --------------------------------------------------
+    # Ensure label dtype after split
+    # --------------------------------------------------
+    for df_ in (train_df, val_df, test_df):
+        df_["label"] = df_["label"].astype("int64")
+
+
+    # --------------------------------------------------
     # Save processed files
     # --------------------------------------------------
     train_df.to_csv(output_dir / "train.csv", index=False)
@@ -142,6 +158,9 @@ def load_and_split_dataset(
     logger.info(f"Test size: {len(test_df)}")
     logger.info("Train class distribution:")
     logger.info(train_df["label"].value_counts().to_dict())
+    logger.info(f"Label dtype (train): {train_df['label'].dtype}")
+    logger.info(f"Label sample: {train_df['label'].head().tolist()}")
+
 
     print("✅ Dataset preprocessing completed")
     print(f"Train: {len(train_df)}, Val: {len(val_df)}, Test: {len(test_df)}")

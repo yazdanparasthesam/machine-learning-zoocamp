@@ -10,10 +10,13 @@ class NewsDataset(Dataset):
     Custom PyTorch Dataset for Fake News detection.
     """
     def __init__(self, texts, labels, tokenizer: DistilBertTokenizerFast, max_len=512):
-        self.texts = texts
-        self.labels = labels.map({"fake":0, "real":1}).values
+        self.texts = texts.reset_index(drop=True)
+        self.labels = labels.astype("int64").values
         self.tokenizer = tokenizer
         self.max_len = max_len
+
+        # Safety check (optional but recommended)
+        assert set(self.labels).issubset({0, 1}), "Invalid label values detected"
 
     def __len__(self):
         return len(self.labels)
@@ -22,15 +25,17 @@ class NewsDataset(Dataset):
         encoding = self.tokenizer(
             self.texts.iloc[idx],
             truncation=True,
-            padding='max_length',
+            padding="max_length",
             max_length=self.max_len,
-            return_tensors='pt'
+            return_tensors="pt",
         )
+
         return {
-            'input_ids': encoding['input_ids'].squeeze(0),
-            'attention_mask': encoding['attention_mask'].squeeze(0),
-            'labels': torch.tensor(self.labels[idx], dtype=torch.long)
+            "input_ids": encoding["input_ids"].squeeze(0),
+            "attention_mask": encoding["attention_mask"].squeeze(0),
+            "labels": torch.tensor(self.labels[idx], dtype=torch.long),
         }
+
 
 def create_dataloaders(train_df, val_df, test_df, tokenizer, max_len=512, batch_size=16):
     """

@@ -67,6 +67,9 @@ NUM_WORKERS = cfg["runtime"]["num_workers"]
 PIN_MEMORY = cfg["runtime"]["pin_memory"]
 
 MODEL_PATH = Path("models/model.pt")
+RAW_DATA_DIR = "data/raw"
+PROCESSED_DATA_DIR = "data/processed"
+
 
 
 # =========================
@@ -93,7 +96,8 @@ def train():
     logger.info("Loading and splitting dataset")
 
     train_df, val_df, test_df = load_and_split_dataset(
-        csv_path=TRAIN_FILE,
+        raw_dir=RAW_DATA_DIR,
+        output_dir=PROCESSED_DATA_DIR,
         test_size=cfg["data"]["test_split"],
         val_size=cfg["data"]["val_split"],
         random_state=cfg["data"]["random_seed"],
