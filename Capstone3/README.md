@@ -360,7 +360,13 @@ This project deliberately separates both approaches to ensure **correct, princip
 - Output: Probability of `fake` vs `real`
 - Hyperparameters passed to the model via `config/model.py` file
 
-![alt text](6.png)
+Training Done on google colab to use GPU and we see the GPU `Tesla4` is available:
+
+![alt text](3.png)
+
+after that we started the training and it was ok and `model.pt` saved in directory model.
+
+![alt text](4.png)
 
 ---
 
