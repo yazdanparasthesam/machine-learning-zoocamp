@@ -2,19 +2,9 @@
 
 from transformers import DistilBertForSequenceClassification
 
-
-def build_model(
-    name: str = "distilbert-base-uncased",
-    num_classes: int = 2,
-    pretrained: bool = True,
-):
+def build_model(name: str, num_classes: int, pretrained: bool = True):
     """
-    Build and return a text classification model.
-
-    Args:
-        name: Transformer model name (HuggingFace)
-        num_classes: Number of output classes
-        pretrained: Whether to load pretrained weights
+    Build DistilBERT model for sequence classification
     """
 
     if pretrained:
@@ -23,9 +13,10 @@ def build_model(
             num_labels=num_classes,
         )
     else:
-        model = DistilBertForSequenceClassification.from_config(
+        model = DistilBertForSequenceClassification.from_pretrained(
             name,
             num_labels=num_classes,
+            ignore_mismatched_sizes=True,
         )
 
     return model
