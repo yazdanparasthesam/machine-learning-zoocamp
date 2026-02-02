@@ -410,9 +410,9 @@ curl -X POST http://localhost:8000/predict \
 Run the inference service locally using Uvicorn:
 
 ```bash
-uvicorn src.inference:app --reload --host 0.0.0.0 --port 8000
+uvicorn src.predict:app --host 0.0.0.0 --port 8000
 ```
-![alt text](9.png)
+![alt text](5.png)
 
 ### 🩺 Health & Metadata Endpoints
 
@@ -429,19 +429,19 @@ Example Responses
 ```
 ```json
 {
-  "model": "transformer-based fake news classifier",
+  "model": "distilbert-base-uncased",
   "num_classes": 2,
   "classes": ["fake", "real"],
   "device": "cpu"
 }
 ```
-![alt text](10.png)
+![alt text](6.png)
 
 
 
 Logs of health and info:
 
-![alt text](11.png)
+![alt text](7.png)
 
 ### 🔮 Test Prediction Locally
 
@@ -457,15 +457,13 @@ curl -X POST http://localhost:8000/predict \
 Example Output
 ```json
 {
-  "fake": 0.91,
-  "real": 0.09
+  "fake": 0.9998301267623901,
+  "real": 0.00016987029812298715
 }
 ```
 
-```bash
-curl -X POST -F "file=@image.jpg" http://localhost:8000/predict
-```
-![alt text](12.png)
+
+![alt text](8.png)
 
 ### 📜 Inference Logs
 
@@ -473,6 +471,6 @@ Prediction requests are logged for monitoring, debugging, and drift analysis.
 
 Logs of predict:
 
-![alt text](13.png)
+![alt text](9.png)
 
 ---
