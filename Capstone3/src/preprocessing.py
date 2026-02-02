@@ -16,11 +16,11 @@ from sklearn.model_selection import train_test_split
 LOG_DIR = Path("logs")
 LOG_DIR.mkdir(exist_ok=True)
 
-logging.basicConfig(
-    filename=LOG_DIR / "preprocessing.log",
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s",
-)
+#logging.basicConfig(
+#    filename=LOG_DIR / "preprocessing.log",
+#    level=logging.INFO,
+#    format="%(asctime)s - %(levelname)s - %(message)s",
+#)
 
 logger = logging.getLogger(__name__)
 

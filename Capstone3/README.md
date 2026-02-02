@@ -364,7 +364,7 @@ Training Done on google colab to use GPU and we see the GPU `Tesla4` is availabl
 
 ![alt text](3.png)
 
-after that we started the training and it was ok and `model.pt` saved in directory model.
+after that we started the training and it was ok and `model.pt` saved in directory model and you can see the training logs in `logs/training.log`
 
 ![alt text](4.png)
 

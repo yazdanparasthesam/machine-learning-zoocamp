@@ -53,3 +53,6 @@ def create_dataloaders(train_df, val_df, test_df, tokenizer, max_len=512, batch_
     print(f"Train batches: {len(train_dl)}, Validation batches: {len(val_dl)}, Test batches: {len(test_dl)}")
     
     return train_dl, val_dl, test_dl
+
+import logging
+logger = logging.getLogger(__name__)

@@ -29,18 +29,28 @@ from src.data_loader import create_dataloaders
 LOG_DIR = Path("logs")
 LOG_DIR.mkdir(exist_ok=True)
 
-logging.basicConfig(
-    filename=LOG_DIR / "training.log",
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s",
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+formatter = logging.Formatter(
+    "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
+
+# File handler → training.log
+file_handler = logging.FileHandler(LOG_DIR / "training.log")
+file_handler.setFormatter(formatter)
+
+# Console handler
+console_handler = logging.StreamHandler()
+console_handler.setFormatter(formatter)
+
+# Avoid duplicate handlers
+if not logger.handlers:
+    logger.addHandler(file_handler)
+    logger.addHandler(console_handler)
 
 logger = logging.getLogger(__name__)
 
-# also log to console
-console = logging.StreamHandler()
-console.setLevel(logging.INFO)
-logger.addHandler(console)
 
 
 # =========================
