@@ -1140,32 +1140,32 @@ capstone3-fake-news-k8s/
 │   └── hpa.yaml
 │
 ├── logs/
-│   ├── predictions.jsonl
-│   └── inference.log
+│   ├── preprocessing.log
+│   └── training.log
 │
 ├── models/
 │   ├── model.pt
 │   └── tokenizer/
 │
-├── monitoring/
-│   └── evidently_report.py
+├── notebooks/
+│   └── bert_exploration.ipynb
+│   └── tfidf_experiments.ipynb
 │
 ├── src/
+│   ├── config/
+│       └── __init__.py
+│       └── config.py
 │   ├── __init__.py
-│   ├── predict.py
-│   ├── model.py
 │   ├── data_loader.py
-│   ├── train.py
-│   └── drift.py
+│   ├── model.py
+│   ├── predict.py
+│   ├── preprocessing.py
+│   └── train.py
 │
-├── tests/
-│   └── test_data_loader.py
-│
-├── .dockerignore
 ├── Dockerfile
-├── k8s_verify.py
+├── k8sVerify.py
+├── main.py
 ├── Makefile
-├── notebook.ipynb
 ├── pyproject.toml
 ├── README.md
 ├── requirements.txt
