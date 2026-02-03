@@ -1179,39 +1179,28 @@ capstone3-fake-news-k8s/
 While the current system demonstrates the feasibility of automated fake news
 detection using machine learning, it has several limitations:
 
-- **Dataset bias and coverage**
-
-The training data may not fully represent all news domains, writing styles,
-languages, or emerging misinformation patterns, which can reduce
-generalization to real-world content.
-
-- **Binary or coarse-grained classification**
-
-The model primarily distinguishes between `fake` and `real` news and does
-not capture nuanced cases such as satire, partially misleading content,
-or opinionated journalism.
-
-- **Static text-based inference**
-
-The system relies mainly on textual content and does not incorporate
-auxiliary signals such as source credibility, author history, social
-engagement, or temporal propagation patterns.
-
-- **Limited explainability**
-
-Although predictions are accurate, the system provides limited insight
-into why a piece of content is classified as fake or real, which can
-reduce trust in high-stakes scenarios.
-
-- **Manual model updates**
-
-Model retraining and deployment are not fully automated and require
-human intervention, even when data or concept drift is detected.
-
-- **Language and domain constraints**
-
-Performance may degrade on multilingual content or domain-specific news
-(e.g., medical, financial, or political misinformation).
+- **Dataset bias and coverage**  
+  The training data may not fully represent all news domains, writing styles,
+  languages, or emerging misinformation patterns, which can reduce
+  generalization to real-world content.
+- **Binary or coarse-grained classification**  
+  The model primarily distinguishes between `fake` and `real` news and does
+  not capture nuanced cases such as satire, partially misleading content,
+  or opinionated journalism.
+- **Static text-based inference**  
+  The system relies mainly on textual content and does not incorporate
+  auxiliary signals such as source credibility, author history, social
+  engagement, or temporal propagation patterns.
+- **Limited explainability**  
+  Although predictions are accurate, the system provides limited insight
+  into why a piece of content is classified as fake or real, which can
+  reduce trust in high-stakes scenarios.
+- **Manual model updates**  
+  Model retraining and deployment are not fully automated and require
+  human intervention, even when data or concept drift is detected.
+- **Language and domain constraints**  
+  Performance may degrade on multilingual content or domain-specific news
+  (e.g., medical, financial, or political misinformation).
 
 ---
 
@@ -1219,42 +1208,32 @@ Performance may degrade on multilingual content or domain-specific news
 
 Potential improvements and extensions include:
 
-- **Dataset expansion and continual learning**
+- **Dataset expansion and continual learning**  
+  Incorporating more diverse, multilingual, and up-to-date news sources,
+  along with continual learning to adapt to evolving misinformation trends.
+- **Fine-grained and multi-label classification**  
+  Extending the model to detect categories such as satire, clickbait,
+  propaganda, or partially false claims instead of a simple binary label.
+- **Explainable AI (XAI) integration**  
+  Adding attention visualization, SHAP/LIME explanations, or rationale
+  generation to improve transparency and user trust.
 
-Incorporating more diverse, multilingual, and up-to-date news sources,
-along with continual learning to adapt to evolving misinformation trends.
+- **Multi-modal fake news detection**  
+  Combining text with images, metadata, and social context to better capture
+  modern misinformation campaigns.
 
-- **Fine-grained and multi-label classification**
+- **Automated drift handling and rollback**  
+  Implementing statistical drift detection, automatic model comparison,
+  and rollback mechanisms in Kubernetes for safer production deployments.
 
-Extending the model to detect categories such as satire, clickbait,
-propaganda, or partially false claims instead of a simple binary label.
+- **LLM gateway and hybrid inference**  
+  Introducing an LLM gateway pattern to combine classical ML models with
+  large language models for reasoning-based validation and fact-checking.
 
-- **Explainable AI (XAI) integration**
+- **Scalability and performance optimization**  
+  Applying model distillation, quantization, or batching to reduce latency
+  and improve throughput under high traffic.
 
-Adding attention visualization, SHAP/LIME explanations, or rationale
-generation to improve transparency and user trust.
-
-- **Multi-modal fake news detection**
-
-Combining text with images, metadata, and social context to better capture
-modern misinformation campaigns.
-
-- **Automated drift handling and rollback**
-
-Implementing statistical drift detection, automatic model comparison,
-and rollback mechanisms in Kubernetes for safer production deployments.
-
-- **LLM gateway and hybrid inference**
-
-Introducing an LLM gateway pattern to combine classical ML models with
-large language models for reasoning-based validation and fact-checking.
-
-- **Scalability and performance optimization**
-
-Applying model distillation, quantization, or batching to reduce latency
-and improve throughput under high traffic.
-
-- **Ethical and robustness evaluation**
-
-Systematic evaluation of bias, adversarial robustness, and fairness across
-topics, sources, and demographic groups to support responsible deployment.
+- **Ethical and robustness evaluation**  
+  Systematic evaluation of bias, adversarial robustness, and fairness across
+  topics, sources, and demographic groups to support responsible deployment.
