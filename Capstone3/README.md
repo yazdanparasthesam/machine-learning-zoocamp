@@ -1008,14 +1008,69 @@ and reproducible behavior.
 
 ---
 
-## 🧪 How to Run It
+## ✅ Kubernetes Service Testing (Fake News Detection API)
+
+While the Kubernetes pods are running, you can test the Fake News Detection API using the provided verification script.
+
+### 📄 Script Content (k8s_verify.py)
+```bash
+import requests
+
+### Kubernetes NodePort endpoint
+URL = "http://172.18.0.3:30080/predict"
+
+payload = {
+    "text": (
+        "Breaking news! Scientists confirm the discovery of water on Mars, "
+        "raising hopes for future human missions."
+    )
+}
+
+response = requests.post(URL, json=payload)
+
+print("Status code:", response.status_code)
+print("Prediction:", response.json())
+```
+
+### 🏗️ System Architecture
+```bash
+Client
+  ↓
+Kubernetes Service (NodePort)
+  ↓
+FastAPI Inference API
+  ↓
+Transformer-based NLP Model (DistilBERT)
+  ↓
+Fake / Real Prediction + Logs
+```
+
+### 📡 Example API Request (cURL)
+```bash
+curl -X POST \
+  -H "Content-Type: application/json" \
+  -d '{
+        "text": "Government confirms new economic reforms will boost employment."
+      }' \
+  http://172.18.0.3:30080/predict
+```
+
+### 📊 Example API Response
+```bash
+{
+  "fake": 0.12,
+  "real": 0.88
+}
+```
+
+### 🧪 How to Run It
 
 From your project root:
 ```bash
 python k8s_verify.py
 ```
 
-## ✅ Expected Output
+### ✅ Expected Output
 ```bash
 Status code: 200
 Prediction: {
@@ -1023,3 +1078,104 @@ Prediction: {
   "real": 0.92
 }
 ```
+---
+
+## 🛠️ Tech Stack
+
+### Natural Language Processing & Deep Learning
+
+- **PyTorch** – deep learning framework used for training and inference
+- **Transformers (Hugging Face)** – pre-trained transformer models (DistilBERT) for text classification
+- **Tokenizers** – fast subword tokenization for NLP pipelines
+- **NumPy** – numerical computations
+- **Pandas** – dataset handling, evaluation, and monitoring
+
+### API & Inference
+
+- **FastAPI** – high-performance REST API for text-based model inference
+- **Uvicorn** – ASGI server for serving the FastAPI application
+
+### Experimentation & Monitoring
+
+- **Evidently** – data and prediction drift analysis for NLP models
+- **Scikit-learn** – evaluation metrics and preprocessing utilities
+
+### Containerization & Orchestration
+
+- **Docker** – containerization of the inference service
+- **Kubernetes (kind)** – local Kubernetes cluster for deployment
+
+### Configuration & Dependency Management
+
+- **YAML** – configuration management for model and inference parameters
+- **uv** – fast and modern Python dependency manager
+- **requirements.txt** – pinned dependencies for reproducible Docker builds
+
+### Development & Tooling
+
+- **Jupyter Notebook** – exploratory data analysis and model experimentation
+- **Makefile** – automation of common development and deployment tasks
+- **Git & GitHub** – version control and project collaboration
+
+---
+
+## 🧱 Project Structure
+
+```css
+capstone3-fake-news-k8s/
+│
+├── config/
+│   ├── __init__.py
+│   └── model.yaml
+│
+├── data/
+│   ├── raw/
+│   ├── processed/
+│   └── .gitkeep
+│
+├── k8s/
+│   ├── deployment.yaml
+│   ├── namespace.yaml
+│   ├── service.yaml
+│   └── hpa.yaml
+│
+├── logs/
+│   ├── predictions.jsonl
+│   └── inference.log
+│
+├── models/
+│   ├── model.pt
+│   └── tokenizer/
+│
+├── monitoring/
+│   └── evidently_report.py
+│
+├── src/
+│   ├── __init__.py
+│   ├── predict.py
+│   ├── model.py
+│   ├── data_loader.py
+│   ├── train.py
+│   └── drift.py
+│
+├── tests/
+│   └── test_data_loader.py
+│
+├── .dockerignore
+├── Dockerfile
+├── k8s_verify.py
+├── Makefile
+├── notebook.ipynb
+├── pyproject.toml
+├── README.md
+├── requirements.txt
+└── uv.lock
+```
+
+## ⚠️ Limitations & Future Work
+
+### Limitations
+
+---
+
+### Future Work
