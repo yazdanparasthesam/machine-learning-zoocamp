@@ -654,9 +654,302 @@ http://localhost:8001/docs
 
 ---
 
+# ☸️ Kubernetes Orchestration (kind) — ML Inference Platform
 
+This guide explains how to deploy the **ML Inference API (Torch + Transformers)** on a **local Kubernetes cluster using kind**, including:
+
+- GPU-ready container image
+- Kubernetes Deployment & Service
+- Health checks & metrics
+- Horizontal scaling
+- Local testing & debugging
 
 ---
+
+## 1️⃣ Install kind
+
+```bash
+curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.22.0/kind-linux-amd64
+chmod +x kind
+sudo mv kind /usr/local/bin/
+```
+
+## 2️⃣ Verify kind Installation
+```bash
+kind version
+```
+
+![alt text](27.png)
+
+## 3️⃣ Create a Kubernetes Cluster
+```bash
+kind create cluster --name ml-inference
+```
+
+📌 This creates a single-node control plane suitable for development and testing.
+
+## 4️⃣ Verify Cluster Status
+```bash
+kubectl cluster-info
+```
+
+You should see:
+
+- Kubernetes master
+- CoreDNS
+- API server
+
+## 5️⃣ Build Docker Image (LOCAL)
+
+⚠️ Image must be built locally before loading into kind.
+```bash
+docker build -t ml-inference-api:latest .
+```
+
+This image includes:
+
+- PyTorch
+- Transformers
+- FastAPI
+- Prometheus metrics
+- Healthcheck endpoint
+
+## 6️⃣ Verify Docker Image
+```bash
+docker images | grep capstone3-nlp
+```
+
+## 7️⃣ Load Docker Image into kind
+
+⚠️ Critical step
+kind does NOT automatically see host Docker images.
+```bash
+kind load docker-image capstone3-nlp:latest --name ml-inference
+```
+## 8️⃣ Verify Image Inside kind Node
+```bash
+docker ps | grep kind
+```
+
+Then:
+```bash
+docker exec -it ml-inference-control-plane crictl images | grep ml-inference
+```
+
+✔ Confirms the image is available to Kubernetes.
+
+![alt text](28.png)
+
+![alt text](29.png)
+
+
+## 9️⃣ Apply Kubernetes Manifests
+```bash
+kubectl apply -f k8s/namespace.yaml
+kubectl apply -f k8s/deployment.yaml
+kubectl apply -f k8s/service.yaml
+```
+
+📦 Resources deployed:
+
+- Namespace
+- Deployment (replicas > 1)
+- NodePort Service
+
+## 🔟 Verify Kubernetes Resources ✅
+
+### 🔟-1 Pods
+```bash
+kubectl get pods -n ml-inference
+```
+
+Expected:
+```bash
+ml-inference-api-xxxx   Running
+```
+### 🔟-2 Services
+```bash
+kubectl get svc -n ml-inference
+```
+
+Expected:
+```bash
+ml-inference-service   NodePort
+```
+### 🔟-3 Logs
+```bash
+kubectl logs -n ml-inference deploy/ml-inference-api
+```
+
+Logs should show:
+
+- Model loading
+- API startup
+- Metrics enabled
+
+### 🔟-4 Horizontal Pod Autoscaler
+```bash
+kubectl get hpa -n ml-inference
+```
+
+✔ Confirms autoscaling is active.
+
+1️⃣1️⃣ Access API from Host (Method 1 — NodePort)
+1️⃣1️⃣-1 Get Node IP
+```bash
+docker inspect ml-inference-control-plane | grep IPAddress
+```
+
+Example:
+```bash
+"IPAddress": "172.18.0.3"
+```
+
+1️⃣1️⃣-2 Test Health & Info
+```bash
+curl http://172.18.0.3:30080/health
+curl http://172.18.0.3:30080/info
+```
+
+Expected:
+```bash
+{"status":"ok"}
+```
+
+1️⃣1️⃣-3 Swagger UI (Kubernetes)
+
+Open in browser:
+```bash
+http://172.18.0.3:30080/docs
+```
+
+📌 You can test:
+
+- `/health`
+- `/metrics`
+- `/predict`
+
+directly from Swagger UI.
+
+ Steps:
+
+- Select POST /predict
+- Click Try it out
+- Enter text input:
+```bash
+{
+  "text": "Breaking news: Scientists discover water on Mars"
+}
+```
+
+- Click Execute
+
+Expected response:
+```bash
+{
+  "fake": 0.9998301267623901,
+  "real": 0.00016987029812298715
+}
+```
+
+1️⃣1️⃣-4 Test `/predict` from CLI
+```bash
+curl -X POST http://172.18.0.3:30080/predict \
+  -H "Content-Type: application/json" \
+  -d '{
+    "text": "Breaking news: Scientists discover water on Mars"
+  }'
+```
+
+Expected Response:
+```bash
+{
+  "fake": 0.9998301267623901,
+  "real": 0.00016987029812298715
+}
+```
+
+
+1️⃣2️⃣ Access API (Method 2 — kubectl port-forward)
+```bash
+kubectl port-forward -n ml-inference svc/ml-inference-service 8000:80
+```
+
+Now access locally:
+```bash
+curl http://localhost:8000/health
+curl http://localhost:8000/info
+```
+
+Swagger UI:
+```bash
+http://localhost:8000/docs
+```
+
+📊 Prometheus Metrics
+
+Metrics endpoint:
+```bash
+GET /metrics
+```
+
+Compatible with:
+
+- Prometheus
+- Grafana dashboards
+- HPA custom metrics
+
+🧠 Deployment Architecture
+
+Kubernetes Resources Used:
+
+- Namespace
+- Deployment
+ - Multi-replica
+ - Health probes
+ - Rolling updates
+- NodePort Service
+- Horizontal Pod Autoscaler
+- Prometheus-ready metrics
+---
+
+### Configuration File
+The main configuration file is located at:
+```
+config/model.yaml
+```
+
+Example configuration:
+```yaml
+model:
+  name: distilbert-base-uncased
+  num_classes: 2
+  pretrained: true
+
+training:
+  batch_size: 16
+  epochs: 3
+  learning_rate: 2e-5
+  optimizer: adamw
+  loss: cross_entropy
+
+data:
+  raw_dir: data/raw
+  processed_dir: data/processed
+  train_file: data/processed/train.csv
+  val_file: data/processed/val.csv
+  test_file: data/processed/test.csv
+  max_length: 512
+  train_split: 0.7
+  val_split: 0.15
+  test_split: 0.15
+  random_seed: 42
+
+runtime:
+  device: auto
+  num_workers: 2
+  pin_memory: true
+```
 
 ## 📦 Dependency Management
 
