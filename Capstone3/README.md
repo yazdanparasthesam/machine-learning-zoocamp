@@ -382,6 +382,43 @@ for real-time inference.
 The service loads the trained **Transformer-based text classification model**
 and returns **class probabilities** for the labels `fake` and `real`.
 
+### 📁 src/config/__init__.py
+
+#### `src/config/__init__.py`
+
+Initializes the configuration package and exposes configuration objects for easy import across the project.  
+This file allows modules to access configuration settings using a unified interface (e.g. `from src.config import settings`).
+
+### 📁 src/config/config.py
+
+#### `src/config/config.py`
+
+Central configuration module for the project.  
+Defines all runtime settings such as dataset paths, model hyperparameters, training options, inference parameters, and environment-specific values.  
+Acts as a single source of truth to ensure consistency across training, evaluation, and inference.
+
+### 📁 src/model.py
+
+#### `src/data_loader.py`
+
+Handles dataset loading and preprocessing.  
+Includes utilities to read raw data, clean and tokenize inputs, create training/validation/test splits, and return data loaders compatible with the training and inference pipelines.
+
+
+### 📁 src/data_loader.py
+
+#### `src/data_loader.py`
+
+Handles dataset loading and preprocessing.  
+Includes utilities to read raw data, clean and tokenize inputs, create training/validation/test splits, and return data loaders compatible with the training and inference pipelines.
+
+## Project Structure
+
+- `src/config/` – Configuration management
+- `src/model.py` – Model architecture definition
+- `src/data_loader.py` – Data loading and preprocessing
+
+
 ---
 
 ## 🔌 Endpoint (POST `/predict`)
@@ -474,3 +511,196 @@ Logs of predict:
 ![alt text](9.png)
 
 ---
+
+## 🐳 Containerization
+
+The inference service is containerized using Docker.
+
+Actually I have implemented Multi-Stage Dockerfile
+
+### 🧱 Why Multi-Stage Docker?
+
+| Benefit           | Why it matters              |
+| ----------------- | --------------------------- |
+| Smaller image     | No build tools in runtime   |
+| Faster startup    | Lean final container        |
+| Cleaner security  | No compilers / caches       |
+| Industry standard | Used in real ML deployments |
+
+
+### 🧠 Strategy for This Project
+
+This project is designed as a **production-ready NLP inference service**, following best practices from MLOps and cloud deployment.
+
+We split the workflow into **two clear stages**:
+
+---
+
+### 🚧 Stage 1 — Model Build & Training
+
+Purpose: train and persist a reproducible NLP model.
+
+**Responsibilities**
+- Install Python dependencies
+- Load and preprocess dataset
+- Build and train the Transformer-based model
+- Save trained artifacts (model + tokenizer)
+
+**Key components**
+- `src/data_loader.py` – dataset loading & preprocessing
+- `src/model.py` – model architecture and initialization
+- `src/train.py` – training pipeline and model persistence
+- `src/config/` – centralized configuration management
+
+Training is executed **once**, and the trained model is reused for inference.
+
+---
+
+### 🚀 Stage 2 — Runtime Inference Service
+
+Purpose: serve predictions with minimal runtime overhead.
+
+**Responsibilities**
+- Load trained model and tokenizer
+- Expose REST APIs using FastAPI
+- Handle health checks, metadata, and predictions
+- Run efficiently in containerized environments
+
+**Key components**
+- `src/predict.py` – FastAPI application and prediction logic
+- `uvicorn` – ASGI server for production inference
+- Minimal runtime dependencies (no training-only packages)
+
+---
+
+## 🐳 Docker-Based Deployment Flow
+
+A **multi-stage Docker strategy** is used to ensure:
+- Smaller image size
+- Faster startup time
+- Clear separation between build and runtime
+
+---
+
+### 1-Build the Docker Image
+```bash
+docker build -t capstone3-nlp .
+```
+
+![alt text](11.png)
+
+![alt text](12.png)
+
+#### 2-Verify the Docker image:
+```bash
+docker images | grep capstone3-nlp
+```
+![alt text](13.png)
+
+#### 3-Run the container:
+```bash
+docker run --rm -p 8001:8000 capstone3-nlp:latest
+```
+![alt text](14.png)
+
+#### 4-Test endpoints health and info:
+
+```bash
+curl http://localhost:8001/health
+curl http://localhost:8001/info
+```
+
+![alt text](15.png)
+
+#### 5-Docker logs of health and info:
+
+![alt text](16.png)
+
+#### 6-Test endpoints prediction:
+
+```bash
+curl -X POST http://localhost:8001/predict \
+     -H "Content-Type: application/json" \
+     -d '{"text": "This movie was absolutely fantastic"}'
+```
+![alt text](17.png)
+
+#### 7-Docker logs of prediction:
+
+![alt text](18.png)
+
+#### 8-Swagger UI:
+```bash
+http://localhost:8001/docs
+```
+![alt text](19.png)
+
+#### 9-Swagger UI docker logs:
+
+![alt text](20.png)
+
+#### 10-Swagger UI health test:
+
+![alt text](21.png)
+
+#### 11-Swagger UI info test:
+
+![alt text](22.png)
+
+#### 12-Swagger UI predict test with image upload:
+
+![alt text](23.png)
+
+
+---
+
+
+
+---
+
+## 📦 Dependency Management
+
+This project uses **uv**, a fast and modern Python package manager,
+for dependency resolution and locking.
+
+Dependencies are declared in `pyproject.toml` and compiled into a
+reproducible `requirements.txt` file for compatibility with Docker,
+CI/CD, and standard Python environments.
+
+---
+
+### ➕ Adding Dependencies
+
+To add a new dependency:
+
+```bash
+uv add fastapi uvicorn torch transformers pandas evidently dynaconf python-multipart
+```
+![alt text](24.png)
+
+![alt text](25.png)
+
+⚠️ We explicitly pin NumPy to <2 for PyTorch compatibility.
+
+```bash
+uv add "numpy<2"
+```
+### 📌 Generating requirements.txt
+
+A fully pinned requirements.txt is generated using:
+```bash
+uv pip compile pyproject.toml -o requirements.txt
+```
+
+![alt text](26.png)
+
+This file must be committed to the repository.
+
+### 🐳 Why requirements.txt is still used
+
+Although uv is used for development, `requirements.txt` ensures:
+
+- Docker compatibility
+- Faster CI builds
+- Deterministic deployments
+- Kubernetes & air-gapped support
