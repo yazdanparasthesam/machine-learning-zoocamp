@@ -22,7 +22,7 @@ RUN apt-get update && apt-get install -y \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy only dependency definitions first (for Docker cache efficiency)
+# Copy dependency definitions first (Docker cache optimization)
 COPY requirements.txt .
 
 # Upgrade pip and build wheels for all dependencies
@@ -35,6 +35,7 @@ RUN pip install --upgrade pip && \
 # Purpose:
 # - Minimal image
 # - Install only prebuilt wheels
+# - Bake ML model artifacts into the image
 # - Run FastAPI inference service
 ############################################
 
@@ -54,16 +55,45 @@ RUN apt-get update && apt-get install -y \
 # Copy prebuilt Python wheels from builder stage
 COPY --from=builder /wheels /wheels
 
-# Install Python dependencies from wheels
+# Install Python dependencies from wheels (offline-safe)
 RUN pip install --no-cache-dir /wheels/*
 
-# Copy application source code
+############################################
+# 🧠 Download HuggingFace model at BUILD time
+# Purpose:
+# - Avoid runtime internet dependency
+# - Ensure Kubernetes / air-gapped compatibility
+# - Faster startup and reproducibility
+############################################
+
+RUN python - <<EOF
+from transformers import DistilBertTokenizerFast, AutoModelForSequenceClassification
+
+MODEL_NAME = "distilbert-base-uncased"
+MODEL_DIR = "/models/distilbert"
+
+tokenizer = DistilBertTokenizerFast.from_pretrained(MODEL_NAME)
+tokenizer.save_pretrained(MODEL_DIR)
+
+model = AutoModelForSequenceClassification.from_pretrained(MODEL_NAME)
+model.save_pretrained(MODEL_DIR)
+EOF
+
+############################################
+# 📦 Copy application source code
+############################################
+
 COPY src/ src/
 COPY config/ config/
+
+# (Optional) keep models dir if you have fine-tuned weights
 COPY models/ models/
 
 # Expose FastAPI port
 EXPOSE 8000
 
-# Run FastAPI app using Uvicorn
+############################################
+# 🚀 Run FastAPI app
+############################################
+
 CMD ["uvicorn", "src.predict:app", "--host", "0.0.0.0", "--port", "8000"]

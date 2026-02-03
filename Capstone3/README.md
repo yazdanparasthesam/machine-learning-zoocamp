@@ -749,6 +749,7 @@ kubectl apply -f k8s/namespace.yaml
 kubectl apply -f k8s/deployment.yaml
 kubectl apply -f k8s/service.yaml
 ```
+![alt text](30.png)
 
 📦 Resources deployed:
 
@@ -760,7 +761,11 @@ kubectl apply -f k8s/service.yaml
 
 ### 🔟-1 Pods
 ```bash
-kubectl get pods -n ml-inference
+sudo kubectl delete deployment fake-news-api -n fake-news
+sudo kubectl get pods -n fake-news
+sudo kubectl logs -n fake-news fake-news-api-85977ddc4b-g9zzj
+sudo kubectl logs -n fake-news fake-news-api-85977ddc4b-g9zzj --previous
+sudo kubectl describe pod -n fake-news fake-news-api-85977ddc4b-g9zzj
 ```
 
 Expected:
@@ -769,7 +774,7 @@ ml-inference-api-xxxx   Running
 ```
 ### 🔟-2 Services
 ```bash
-kubectl get svc -n ml-inference
+sudo kubectl get svc -n fake-news
 ```
 
 Expected:
@@ -778,7 +783,7 @@ ml-inference-service   NodePort
 ```
 ### 🔟-3 Logs
 ```bash
-kubectl logs -n ml-inference deploy/ml-inference-api
+sudo kubectl logs -n fake-news deploy/fake-news-api
 ```
 
 Logs should show:
@@ -787,12 +792,6 @@ Logs should show:
 - API startup
 - Metrics enabled
 
-### 🔟-4 Horizontal Pod Autoscaler
-```bash
-kubectl get hpa -n ml-inference
-```
-
-✔ Confirms autoscaling is active.
 
 1️⃣1️⃣ Access API from Host (Method 1 — NodePort)
 1️⃣1️⃣-1 Get Node IP
@@ -997,3 +996,30 @@ Although uv is used for development, `requirements.txt` ensures:
 - Faster CI builds
 - Deterministic deployments
 - Kubernetes & air-gapped support
+
+
+## 🔁 Reproducibility
+
+- All dependencies are listed in `requirements.txt`
+- Training, inference, and deployment are script-based
+- The project can be fully reproduced using the instructions in this `README.md`
+- Preprocessing logic is unit-tested to ensure correct dataset structure
+and reproducible behavior.
+
+---
+
+## 🧪 How to Run It
+
+From your project root:
+```bash
+python k8s_verify.py
+```
+
+## ✅ Expected Output
+```bash
+Status code: 200
+Prediction: {
+  "fake": 0.08,
+  "real": 0.92
+}
+```

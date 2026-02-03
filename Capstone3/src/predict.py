@@ -6,8 +6,10 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from transformers import DistilBertTokenizerFast
 
-from model import build_model
-from config.config import load_config
+
+from src.model import build_model
+from src.config.config import load_config
+
 
 # =========================
 # App & Runtime Setup
@@ -31,9 +33,15 @@ cfg = load_config("config/model.yaml")
 # Tokenizer Initialization
 # =========================
 
-tokenizer = DistilBertTokenizerFast.from_pretrained(
-    cfg["model"]["name"]
-)
+#tokenizer = DistilBertTokenizerFast.from_pretrained(
+#    cfg["model"]["name"]
+#)
+
+MODEL_DIR = "/models/distilbert"
+classes = ["fake", "real"]
+
+tokenizer = DistilBertTokenizerFast.from_pretrained(MODEL_DIR)
+model = AutoModelForSequenceClassification.from_pretrained(MODEL_DIR)
 
 # =========================
 # Model Loading

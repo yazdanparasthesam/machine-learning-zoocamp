@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fake-news-api
+  namespace: fake-news
+  labels:
+    app: fake-news
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: fake-news
+  template:
+    metadata:
+      labels:
+        app: fake-news
+    spec:
+      containers:
+        - name: api
+          image: capstone3-nlp:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+
+          env:
+            - name: ENV
+              value: "production"
+
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1"
+              memory: "1Gi"
+
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 120
+            periodSeconds: 10
+
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 120
+            periodSeconds: 5
