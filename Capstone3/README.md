@@ -930,11 +930,120 @@ http://localhost:8000/docs
 ```
 ![alt text](40.png)
 
-📊 Prometheus Metrics
+1️⃣4️⃣ 📊 Prometheus Metrics
 
-Metrics endpoint:
+1️⃣4️⃣-1 First we add Prometheus dependency to the file `requirements.txt`:
 ```bash
-GET /metrics
+prometheus-client==0.19.0
+```
+then we rebuild later with `--no-cache`.
+
+1️⃣4️⃣-2 Then we create metrics module (clean separation) in file `metrics.py` and then add the `/metrics` in `predict.py` file.
+
+1️⃣4️⃣-3 Then we added the below code to `predict.py`:
+
+```bash
+HTTP_REQUESTS_TOTAL = Counter(
+    "http_requests_total",
+    "Total HTTP requests",
+    ["method", "endpoint", "status"]
+)
+
+HTTP_REQUEST_LATENCY = Histogram(
+    "http_request_latency_seconds",
+    "HTTP request latency",
+    ["endpoint"]
+)
+
+MODEL_PREDICTIONS_TOTAL = Counter(
+    "model_predictions_total",
+    "Total number of model predictions"
+)
+
+@app.middleware("http")
+async def prometheus_middleware(request: Request, call_next):
+    start_time = time.time()
+    response = await call_next(request)
+    latency = time.time() - start_time
+
+    HTTP_REQUESTS_TOTAL.labels(
+        method=request.method,
+        endpoint=request.url.path,
+        status=response.status_code
+    ).inc()
+
+    HTTP_REQUEST_LATENCY.labels(
+        endpoint=request.url.path
+    ).observe(latency)
+
+    return response
+
+@app.get("/metrics")
+def metrics():
+    return Response(
+        generate_latest(),
+        media_type=CONTENT_TYPE_LATEST
+    )
+```
+1️⃣4️⃣-4 Now Just rebuild without cache:
+```bash
+sudo docker build --no-cache -t capstone3-nlp .
+```
+1️⃣4️⃣-5 Verify metrics locally ✅
+
+
+Health:
+```bash
+curl http://localhost:8000/health
+```
+
+Prediction:
+```bash
+curl -X POST http://localhost:8000/predict \
+  -H "Content-Type: application/json" \
+  -d '{"text":"Breaking news: Scientists discover water on Mars"}'
+```
+
+Metrics:
+```bash
+curl http://localhost:8000/metrics
+```
+
+You’ll see something like:
+```bash
+# HELP http_requests_total Total HTTP requests
+# TYPE http_requests_total counter
+http_requests_total{method="POST",endpoint="/predict",status="200"} 1
+
+# HELP http_request_latency_seconds HTTP request latency
+# TYPE http_request_latency_seconds histogram
+http_request_latency_seconds_bucket{endpoint="/predict",le="0.1"} 1
+...
+
+# HELP model_predictions_total Total number of predictions
+# TYPE model_predictions_total counter
+model_predictions_total 1
+```
+
+that shows us :
+```bash
+http_requests_total
+http_request_latency_seconds
+model_predictions_total
+```
+
+🎯 That’s exactly what Prometheus expects.
+
+1️⃣4️⃣-6 (Optional) Prometheus scrape config
+
+Later, in prometheus.yml:
+```bash
+scrape_configs:
+  - job_name: "capstone3-nlp"
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - capstone3-nlp:8000
 ```
 
 Compatible with:
@@ -1204,6 +1313,7 @@ capstone3-fake-news-k8s/
 │       └── config.py
 │   ├── __init__.py
 │   ├── data_loader.py
+│   ├── metrics.py
 │   ├── model.py
 │   ├── predict.py
 │   ├── preprocessing.py
