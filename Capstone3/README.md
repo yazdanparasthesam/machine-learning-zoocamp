@@ -699,7 +699,36 @@ You should see:
 - CoreDNS
 - API server
 
-## 5️⃣ Build Docker Image (LOCAL)
+## 5️⃣ Create tokenizer
+
+We Run this locally (outside Docker):
+```bash
+python3 - <<'EOF'
+from transformers import DistilBertTokenizerFast
+
+tokenizer = DistilBertTokenizerFast.from_pretrained(
+    "distilbert-base-uncased"
+)
+
+tokenizer.save_pretrained("models/tokenizer")
+print("Tokenizer saved to models/tokenizer")
+EOF
+```
+After this, you must have:
+
+```css
+models/
+├── model.pt
+└── tokenizer/
+    ├── tokenizer.json
+    ├── vocab.txt
+    ├── special_tokens_map.json
+    └── config.json
+```
+
+![alt text](37.png)
+
+## 6️⃣ Build Docker Image (LOCAL)
 
 ⚠️ Image must be built locally before loading into kind.
 ```bash
@@ -714,19 +743,19 @@ This image includes:
 - Prometheus metrics
 - Healthcheck endpoint
 
-## 6️⃣ Verify Docker Image
+## 7️⃣ Verify Docker Image
 ```bash
 docker images | grep capstone3-nlp
 ```
 
-## 7️⃣ Load Docker Image into kind
+## 8️⃣ Load Docker Image into kind
 
 ⚠️ Critical step
 kind does NOT automatically see host Docker images.
 ```bash
 kind load docker-image capstone3-nlp:latest --name ml-inference
 ```
-## 8️⃣ Verify Image Inside kind Node
+## 9️⃣ Verify Image Inside kind Node
 ```bash
 docker ps | grep kind
 ```
@@ -743,7 +772,8 @@ docker exec -it ml-inference-control-plane crictl images | grep ml-inference
 ![alt text](29.png)
 
 
-## 9️⃣ Apply Kubernetes Manifests
+
+## 🔟 Apply Kubernetes Manifests
 ```bash
 kubectl apply -f k8s/namespace.yaml
 kubectl apply -f k8s/deployment.yaml
@@ -757,9 +787,9 @@ kubectl apply -f k8s/service.yaml
 - Deployment (replicas > 1)
 - NodePort Service
 
-## 🔟 Verify Kubernetes Resources ✅
+## 1️⃣1️⃣ Verify Kubernetes Resources ✅
 
-### 🔟-1 Pods
+### 1️⃣1️⃣-1 Pods
 ```bash
 sudo kubectl delete deployment fake-news-api -n fake-news
 sudo kubectl get pods -n fake-news
@@ -768,23 +798,30 @@ sudo kubectl logs -n fake-news fake-news-api-85977ddc4b-g9zzj --previous
 sudo kubectl describe pod -n fake-news fake-news-api-85977ddc4b-g9zzj
 ```
 
-Expected:
-```bash
-ml-inference-api-xxxx   Running
-```
-### 🔟-2 Services
-```bash
-sudo kubectl get svc -n fake-news
-```
 
 Expected:
 ```bash
-ml-inference-service   NodePort
+fake-news-api-xxxx   Running
 ```
-### 🔟-3 Logs
+
+![alt text](31-1.png)
+
+
+### 1️⃣1️⃣-2 Services
+```bash
+sudo kubectl get svc -n fake-news
+```
+![alt text](33.png)
+
+Expected:
+```bash
+fake-news-service   NodePort
+```
+### 1️⃣1️⃣-3 Logs
 ```bash
 sudo kubectl logs -n fake-news deploy/fake-news-api
 ```
+![alt text](32.png)
 
 Logs should show:
 
@@ -793,8 +830,8 @@ Logs should show:
 - Metrics enabled
 
 
-1️⃣1️⃣ Access API from Host (Method 1 — NodePort)
-1️⃣1️⃣-1 Get Node IP
+1️⃣2️⃣ Access API from Host (Method 1 — NodePort)
+1️⃣2️⃣-1 Get Node IP
 ```bash
 docker inspect ml-inference-control-plane | grep IPAddress
 ```
@@ -803,8 +840,9 @@ Example:
 ```bash
 "IPAddress": "172.18.0.3"
 ```
+![alt text](34.png)
 
-1️⃣1️⃣-2 Test Health & Info
+1️⃣2️⃣-2 Test Health & Info
 ```bash
 curl http://172.18.0.3:30080/health
 curl http://172.18.0.3:30080/info
@@ -815,12 +853,15 @@ Expected:
 {"status":"ok"}
 ```
 
-1️⃣1️⃣-3 Swagger UI (Kubernetes)
+![alt text](35.png)
+
+1️⃣2️⃣-3 Swagger UI (Kubernetes)
 
 Open in browser:
 ```bash
 http://172.18.0.3:30080/docs
 ```
+![alt text](36.png)
 
 📌 You can test:
 
@@ -851,7 +892,7 @@ Expected response:
 }
 ```
 
-1️⃣1️⃣-4 Test `/predict` from CLI
+1️⃣2️⃣-4 Test `/predict` from CLI
 ```bash
 curl -X POST http://172.18.0.3:30080/predict \
   -H "Content-Type: application/json" \
@@ -869,7 +910,7 @@ Expected Response:
 ```
 
 
-1️⃣2️⃣ Access API (Method 2 — kubectl port-forward)
+1️⃣3️⃣ Access API (Method 2 — kubectl port-forward)
 ```bash
 kubectl port-forward -n ml-inference svc/ml-inference-service 8000:80
 ```
@@ -908,7 +949,6 @@ Kubernetes Resources Used:
  - Health probes
  - Rolling updates
 - NodePort Service
-- Horizontal Pod Autoscaler
 - Prometheus-ready metrics
 ---
 
