@@ -996,6 +996,10 @@ Health:
 ```bash
 curl http://localhost:8000/health
 ```
+or 
+```bash
+curl http://172.18.0.3:30080/health
+```
 
 Prediction:
 ```bash
@@ -1003,10 +1007,23 @@ curl -X POST http://localhost:8000/predict \
   -H "Content-Type: application/json" \
   -d '{"text":"Breaking news: Scientists discover water on Mars"}'
 ```
+or 
+
+```bash
+curl -X POST http://172.18.0.3:30080/predict \
+  -H "Content-Type: application/json" \
+  -d '{"text":"Breaking news: Scientists discover water on Mars"}'
+```
+
 
 Metrics:
 ```bash
 curl http://localhost:8000/metrics
+```
+or
+
+```bash
+curl http://172.18.0.3:30080/metrics
 ```
 
 You’ll see something like:
@@ -1031,6 +1048,13 @@ http_requests_total
 http_request_latency_seconds
 model_predictions_total
 ```
+
+![alt text](44.png)
+
+![alt text](45.png)
+
+![alt text](46.png)
+
 
 🎯 That’s exactly what Prometheus expects.
 
