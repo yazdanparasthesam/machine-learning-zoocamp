@@ -6,45 +6,38 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from transformers import DistilBertTokenizerFast
 
-
 from src.model import build_model
 from src.config.config import load_config
 
-
 # =========================
-# App & Runtime Setup
+# App Setup
 # =========================
 
 app = FastAPI(
     title="Fake News Detection API",
-    description="Inference service for DistilBERT-based fake news classifier",
+    description="Inference service for fine-tuned fake news classifier",
     version="1.0.0",
 )
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
 # =========================
-# Configuration Loading
+# Load config
 # =========================
 
 cfg = load_config("config/model.yaml")
 
 # =========================
-# Tokenizer Initialization
+# Tokenizer (LOCAL ONLY)
 # =========================
 
-#tokenizer = DistilBertTokenizerFast.from_pretrained(
-#    cfg["model"]["name"]
-#)
-
-MODEL_DIR = "/models/distilbert"
-classes = ["fake", "real"]
-
-tokenizer = DistilBertTokenizerFast.from_pretrained(MODEL_DIR)
-model = AutoModelForSequenceClassification.from_pretrained(MODEL_DIR)
+tokenizer = DistilBertTokenizerFast.from_pretrained(
+    "/models/tokenizer",
+    local_files_only=True
+)
 
 # =========================
-# Model Loading
+# Build model architecture
 # =========================
 
 model = build_model(
@@ -54,27 +47,23 @@ model = build_model(
 )
 
 model.load_state_dict(
-    torch.load("models/model.pt", map_location=device)
+    torch.load("/models/model.pt", map_location=device)
 )
 
 model.to(device)
 model.eval()
 
-# Class labels must match training labels
 classes = ["fake", "real"]
 
 # =========================
-# Request Schema
+# Request schema
 # =========================
 
 class TextRequest(BaseModel):
-    """
-    Request body schema for prediction endpoint.
-    """
     text: str
 
 # =========================
-# Health & Metadata Endpoints
+# Health & info
 # =========================
 
 @app.get("/health")
@@ -98,15 +87,11 @@ def info():
     }
 
 # =========================
-# Prediction Endpoint
+# Prediction
 # =========================
 
 @app.post("/predict")
 def predict(request: TextRequest):
-    """
-    Perform fake news classification on input text.
-    Returns class probabilities.
-    """
 
     inputs = tokenizer(
         request.text,

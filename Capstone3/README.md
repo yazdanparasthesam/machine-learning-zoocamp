@@ -891,6 +891,7 @@ Expected response:
   "real": 0.00016987029812298715
 }
 ```
+![alt text](39.png)
 
 1️⃣2️⃣-4 Test `/predict` from CLI
 ```bash
@@ -908,23 +909,26 @@ Expected Response:
   "real": 0.00016987029812298715
 }
 ```
-
+![alt text](38.png)
 
 1️⃣3️⃣ Access API (Method 2 — kubectl port-forward)
 ```bash
 kubectl port-forward -n ml-inference svc/ml-inference-service 8000:80
 ```
+![alt text](41.png)
 
 Now access locally:
 ```bash
 curl http://localhost:8000/health
 curl http://localhost:8000/info
 ```
+![alt text](42.png)
 
 Swagger UI:
 ```bash
 http://localhost:8000/docs
 ```
+![alt text](40.png)
 
 📊 Prometheus Metrics
 
