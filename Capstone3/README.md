@@ -1122,6 +1122,9 @@ Prediction: {
   "real": 0.92
 }
 ```
+
+![alt text](43.png)
+
 ---
 
 ## 🛠️ Tech Stack
