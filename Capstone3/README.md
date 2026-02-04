@@ -1255,6 +1255,8 @@ Prediction: {
 
 - **Evidently** – data and prediction drift analysis for NLP models
 - **Scikit-learn** – evaluation metrics and preprocessing utilities
+- **Prometheus** – metrics collection and monitoring for API and model inference
+
 
 ### Containerization & Orchestration
 
